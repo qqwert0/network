@@ -103,7 +103,7 @@ class NetworkStackTop extends RawModule{
         network.io.arp_req.valid                 := valid
         network.io.arp_req.bits                  := Cat(r_index,"hbda8c0".U)
         network.io.arp_rsp.ready                 := 1.U
-        network.io.node_idx                      := index
+        network.io.ip_address                       := Cat(index,"hbda8c0".U)
 
 
 

@@ -75,8 +75,8 @@ class IP_LOOP() extends Module{
     ip(1).io.s_mac_rx                       <> Delay(q(0).io.out,800)
     roce(1).io.s_net_rx_data                <> ip(1).io.m_roce_rx
 
-    ip(0).io.node_idx                       := 1.U
-    ip(1).io.node_idx                       := 2.U
+    ip(0).io.ip_address                       := "h01bda8c0".U
+    ip(1).io.ip_address                       := "h02bda8c0".U
 
     ToZero(io.status)
 
