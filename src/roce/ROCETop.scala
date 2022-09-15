@@ -53,7 +53,6 @@ class ROCETop extends RawModule{
     qdma.io.pin         <> qdma_pin
 	qdma.io.user_clk	:= user_clk
 	qdma.io.user_arstn	:= user_rstn
-	qdma.io.soft_rstn	:= 1.U
 	val axi_slave = withClockAndReset(qdma.io.pcie_clk,!qdma.io.pcie_arstn){Module(new SimpleAXISlave(new AXIB))}
 	axi_slave.io.axi	<> qdma.io.axib
 
