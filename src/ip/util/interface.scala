@@ -5,8 +5,8 @@ import chisel3.util._
 import chisel3.experimental.ChiselEnum
 
 class mac_out extends Bundle{
-    val mac_addr            = Input(UInt(48.W))
-    val hit               = Input(UInt(1.W))
+    val mac_addr            = UInt(48.W)
+    val hit               = UInt(1.W)
 }
 
  class arp_in extends Bundle {

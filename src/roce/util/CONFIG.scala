@@ -33,7 +33,7 @@ object CONFIG{
     def DATA_WIDTH = 512
     def MTU = 4096
     def MTU_WORD = MTU/64
-    def MAX_QPS = 2048
+    def MAX_QPS = 1024
     def RDMA_DEFAULT_PORT = 4791
     def UDP_PROTOCOL = 17
     def IP_HEADER_LEN = 160

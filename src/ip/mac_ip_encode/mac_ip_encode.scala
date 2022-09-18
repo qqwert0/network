@@ -40,40 +40,19 @@ class mac_ip_encode extends Module{
     compute_checksum11.io.data_in       <> ex_ipaddress1.io.data_out
     
     insert_ip_checksum1.io.data_in      <> compute_checksum11.io.data_out
-    insert_ip_checksum1.io.ip_checksum  := compute_checksum11.io.checksum
+    insert_ip_checksum1.io.ip_checksum  <> compute_checksum11.io.checksum
 
-    val q0 = XQueue(new AXIS(512),32)
-    q0.io.in                            <> insert_ip_checksum1.io.data_out
-    val last        = RegInit(UInt(1.W), 1.U)
-    when(last === 1.U){
-        q0.io.out.ready                 := handle_arp_reply1.io.data_in.ready & io.arp_tablein.fire()
-        when(q0.io.out.fire()){
-            last                        := q0.io.out.bits.last
-        }
-    }.otherwise{
-        q0.io.out.ready                 := handle_arp_reply1.io.data_in.ready
-        when(q0.io.out.bits.last === 1.U){
-            last                        := 1.U
-        }
-    }
-    
-     
-    io.arp_tablein.ready                := handle_arp_reply1.io.data_in.ready
-    handle_arp_reply1.io.data_in.bits   := q0.io.out.bits
-    handle_arp_reply1.io.data_in.valid  := q0.io.out.fire()
+    handle_arp_reply1.io.data_in        <> insert_ip_checksum1.io.data_out
+    handle_arp_reply1.io.arptablein     <> io.arp_tablein
     handle_arp_reply1.io.mymac          := io.mac_address
-    handle_arp_reply1.io.arptablein     := io.arp_tablein.bits
-    
-    
-    val q = XQueue(UInt(112.W),32)
-    q.io.in.bits                        := handle_arp_reply1.io.ethheaderout
-    q.io.in.valid                       := handle_arp_reply1.io.data_out.valid
-    q.io.out.ready                      := lshift.io.out.fire()
+
+
     //handle_arp_reply1.io.data_out.fire()
 
     lshift.io.in                        <> handle_arp_reply1.io.data_out
+    
     insert_eth_header1.io.data_in       <> lshift.io.out
-    insert_eth_header1.io.header_in     := q.io.out.bits
+    insert_eth_header1.io.header_in     <> handle_arp_reply1.io.ethheaderout
     io.data_out                         <> insert_eth_header1.io.data_out
     
 }
