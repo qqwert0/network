@@ -12,10 +12,9 @@ class compute_checksum1 extends Module{
     val io = IO(new Bundle{
         val data_in           =   Flipped(Decoupled(new AXIS(512)))
         val data_out          =   Decoupled(new AXIS(512))
-        val checksum          =   Output(UInt(16.W))
+        val checksum          =   Decoupled(UInt(16.W))
         val len               =   Output(UInt(16.W))
 	})
-    io.data_in          <>   io.data_out
     val checknum		= WireInit(VecInit(Seq.fill(32)(0.U(17.W))))
     
     val last            = RegInit(UInt(1.W), 1.U)
@@ -28,7 +27,17 @@ class compute_checksum1 extends Module{
     cics_iplen          := 0.U
     temp6               := temp7
 
+    io.data_in.ready    := io.data_out.ready
+
+    ToZero(io.data_out.valid)
+    ToZero(io.data_out.bits)
+
+    ToZero(io.checksum.valid)
+    ToZero(io.checksum.bits)
+
     when(io.data_in.fire()){
+        io.data_out.valid   := 1.U 
+        io.data_out.bits    := io.data_in.bits
         when(last === 1.U){
             last            := 0.U
             cics_iplen      := io.data_in.bits.data(3,0)
@@ -60,6 +69,8 @@ class compute_checksum1 extends Module{
             temp5 := ((temp4(0) + temp4(1)) + ((temp4(0) + temp4(1))>>16)) & 0xFFFF.U
             temp6 := ~temp5
             temp7 := ~temp5
+            io.checksum.valid   := 1.U 
+            io.checksum.bits    := 0.U //temp6(15,0)
         }
         when(io.data_in.bits.last === 1.U){
             last            := 1.U
@@ -68,6 +79,5 @@ class compute_checksum1 extends Module{
             }
         }
     }
-    io.checksum := temp6(15,0)
     io.len      := cics_iplen
 }
