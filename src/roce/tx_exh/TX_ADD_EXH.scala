@@ -44,10 +44,10 @@ class TX_ADD_EXH() extends Module{
 	
 	pkg_info_fifo.io.deq.ready           := (state === sIDLE)
 
-	header_fifo.io.deq.ready     := ((state === sHEADER) ||((state === sRETH)&write_first)||((state === sAETH)&write_first)) & io.tx_data_out.ready
-    reth_fifo.io.deq.ready       := (state === sRETH) & io.tx_data_out.ready
-    aeth_fifo.io.deq.ready       := (state === sAETH) & io.tx_data_out.ready
-    raw_fifo.io.deq.ready        := (state === sRAW) & io.tx_data_out.ready
+	header_fifo.io.deq.ready     := ((state === sHEADER) ||((state === sRETH)&write_first&reth_fifo.io.deq.valid)||((state === sAETH)&write_first&aeth_fifo.io.deq.valid)) & io.tx_data_out.ready
+    reth_fifo.io.deq.ready       := ((header_fifo.io.deq.valid & write_first) || ~write_first) & (state === sRETH) & io.tx_data_out.ready
+    aeth_fifo.io.deq.ready       := ((header_fifo.io.deq.valid & write_first) || ~write_first) & (state === sAETH) & io.tx_data_out.ready
+    raw_fifo.io.deq.ready        := ((header_fifo.io.deq.valid & write_first) || ~write_first) & (state === sRAW) & io.tx_data_out.ready
 
 
 	io.tx_data_out.valid 			:= 0.U 
