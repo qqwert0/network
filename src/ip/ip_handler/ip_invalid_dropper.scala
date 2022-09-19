@@ -22,7 +22,7 @@ class ip_invalid_dropper extends Module{
     // io.data_out.valid        := io.data_in.valid
     io.data_out.bits         := io.data_in.bits
     io.valid_out             := valid_out
-    io.data_out.valid        := valid_out
+    io.data_out.valid        := 0.U
     
     switch(state){
         is(0.U){
@@ -39,18 +39,22 @@ class ip_invalid_dropper extends Module{
                     io.data_out.valid   := 0.U
                 }   
             }.otherwise{
-                io.data_out.valid        := valid_out
+                io.data_out.valid        := 0.U
             }
         }
         is(1.U){
-            when(io.data_in.bits.last === 1.U){
-                state               := 0.U
-                valid_out           := 0.U
-                io.data_out.valid   := valid_out
-                // io.valid_out        := 0.U
-                // io.data_out.valid   := 0.U
+            when(io.data_in.fire()){
+                when(io.data_in.bits.last === 1.U){
+                    state               := 0.U
+                    valid_out           := 0.U
+                    io.data_out.valid   := valid_out
+                    // io.valid_out        := 0.U
+                    // io.data_out.valid   := 0.U
+                }.otherwise{
+                    io.data_out.valid        := valid_out
+                }                
             }.otherwise{
-                io.data_out.valid        := valid_out
+                io.data_out.valid        := 0.U
             }
         }
     }
