@@ -17,14 +17,17 @@ class FC_TABLE() extends Module{
 		val fc_init	    = Flipped(Decoupled(new FC_REQ()))
         val buffer_cnt	= Input(UInt(16.W))
         val ack_event   = (Decoupled(new IBH_META()))
+        val fc2ack_rsp  = (Decoupled(new IBH_META()))
 		val fc2tx_rsp	= (Decoupled(new IBH_META()))
 	})
 
     val ack_event_fifo = XQueue(new IBH_META(), entries=16)
     val tx_rsp_fifo = XQueue(new IBH_META(), entries=16)
+    val ack_rsp_fifo = XQueue(new IBH_META(), entries=16)
     
 
     io.ack_event                        <> ack_event_fifo.io.out
+    io.fc2ack_rsp                       <> ack_rsp_fifo.io.out
     io.fc2tx_rsp                        <> tx_rsp_fifo.io.out
 
 
@@ -66,15 +69,24 @@ class FC_TABLE() extends Module{
     
     io.fc_init.ready                    := 1.U
     io.rx2fc_req.ready                  := (!io.fc_init.valid.asBool)
-    io.tx2fc_ack.ready                  := (!ack_event_fifo.io.almostfull) & (!tx_rsp_fifo.io.almostfull) & (!io.fc_init.valid.asBool) & (!io.rx2fc_req.valid.asBool)
-    io.tx2fc_req.ready                  := (!ack_event_fifo.io.almostfull) & (!tx_rsp_fifo.io.almostfull) & (!io.fc_init.valid.asBool) & (!io.rx2fc_req.valid.asBool) & (!io.tx2fc_ack.valid.asBool) & (c_tmp_id === n_tmp_id)
+    io.tx2fc_ack.ready                  := (!ack_event_fifo.io.almostfull) & (!ack_rsp_fifo.io.almostfull) & (!io.fc_init.valid.asBool) & (!io.rx2fc_req.valid.asBool)
+    io.tx2fc_req.ready                  := (!tx_rsp_fifo.io.almostfull) & (!io.fc_init.valid.asBool) & (!io.rx2fc_req.valid.asBool) & (!io.tx2fc_ack.valid.asBool) & (c_tmp_id === n_tmp_id)
 
  
     ToZero(ack_event_fifo.io.in.valid)
     ToZero(ack_event_fifo.io.in.bits)
+    ToZero(ack_rsp_fifo.io.in.valid)
+    ToZero(ack_rsp_fifo.io.in.bits)
     ToZero(tx_rsp_fifo.io.in.valid)
     ToZero(tx_rsp_fifo.io.in.bits)
 
+   	class ila_fc_table(seq:Seq[Data]) extends BaseILA(seq)
+  	val mod_fc_table = Module(new ila_fc_table(Seq(	
+		state0,
+        state1,
+        state2
+  	)))
+  	mod_fc_table.connect(clock) 
 
 
     //cycle 1
@@ -118,9 +130,20 @@ class FC_TABLE() extends Module{
         state1                          := sINIT
     }.otherwise{
         fc_request(1)                   := fc_request(0)
+        tmp_credit                      := fc_table.io.data_out_b
         when(fc_request(1).qpn === fc_request(0).qpn){  
             when((fc_request(1).op_code === IB_OP_CODE.RC_ACK)&(state1 === sRXRSP)){
                 tmp_credit.credit       := tmp_credit.credit + fc_request(1).credit
+            }.elsewhen((state1 === sTXACK)){
+                when(tmp_credit.acc_credit > CONFIG.ACK_CREDIT.U){
+                    when(io.buffer_cnt < CONFIG.RX_BUFFER_FULL.U){
+                        tmp_credit.acc_credit   := 0.U
+                    }.otherwise{
+                        tmp_credit.acc_credit   := tmp_credit.acc_credit
+                    }
+                }.otherwise{
+                    tmp_credit.acc_credit   := tmp_credit.acc_credit + fc_request(1).credit
+                }                
             }.elsewhen(tx_forward){
                 when((fc_request(1).op_code === IB_OP_CODE.RC_WRITE_FIRST) || (fc_request(1).op_code === IB_OP_CODE.RC_DIRECT_FIRST)){
                     tmp_credit.credit       := tmp_credit.credit + CONFIG.MTU_WORD.U
@@ -128,10 +151,10 @@ class FC_TABLE() extends Module{
                     tmp_credit.credit       := tmp_credit.credit - fc_request(1).credit
                 }
             }.otherwise{
-                tmp_credit.credit           := fc_table.io.data_out_b.credit
+                tmp_credit              := fc_table.io.data_out_b
             }
         }.otherwise{
-            tmp_credit.credit           := fc_table.io.data_out_b.credit
+            tmp_credit                  := fc_table.io.data_out_b
         }
         state1                          := state0
     }
@@ -144,29 +167,45 @@ class FC_TABLE() extends Module{
         fc_table.io.addr_a              := fc_request(1).qpn
         fc_table.io.wr_en_a             := 1.U
         fc_table.io.data_in_a.credit    := fc_request(1).credit
+        fc_table.io.data_in_a.acc_credit:= 0.U
     }.elsewhen(state1 === sRXRSP){
         when(fc_request(1).op_code === IB_OP_CODE.RC_ACK){
             fc_table.io.addr_a              := fc_request(1).qpn
             fc_table.io.wr_en_a             := 1.U
             fc_table.io.data_in_a.credit    := tmp_credit.credit + fc_request(1).credit
+            fc_table.io.data_in_a.acc_credit:= tmp_credit.acc_credit
         }
     }.elsewhen(state1 === sTXACK){
-        when(io.buffer_cnt < CONFIG.RX_BUFFER_FULL.U){
-            tx_rsp_fifo.io.in.valid      := 1.U
-            tx_rsp_fifo.io.in.bits              := fc_request(1)
-            tx_rsp_fifo.io.in.bits.valid_event:= true.B
+        when(tmp_credit.acc_credit > CONFIG.ACK_CREDIT.U){
+            when(io.buffer_cnt < CONFIG.RX_BUFFER_FULL.U){
+                ack_rsp_fifo.io.in.valid             := 1.U
+                ack_rsp_fifo.io.in.bits              := fc_request(1)
+                ack_rsp_fifo.io.in.bits.credit       := tmp_credit.acc_credit + fc_request(1).credit
+                ack_rsp_fifo.io.in.bits.valid_event  := true.B
+                fc_table.io.addr_a              := fc_request(1).qpn
+                fc_table.io.wr_en_a             := 1.U
+                fc_table.io.data_in_a.credit    := tmp_credit.credit
+                fc_table.io.data_in_a.acc_credit:= 0.U
+            }.otherwise{
+                ack_event_fifo.io.in.valid 		        := 1.U 
+                ack_event_fifo.io.in.bits.ack_event(fc_request(1).qpn, fc_request(1).credit, fc_request(1).psn, fc_request(1).is_wr_ack)
+            }
         }.otherwise{
-		    tx_rsp_fifo.io.in.valid 		        := 1.U 
-            tx_rsp_fifo.io.in.bits.valid_event 	:= false.B 
-			ack_event_fifo.io.in.valid 		        := 1.U 
-			ack_event_fifo.io.in.bits.ack_event(fc_request(1).qpn, fc_request(1).credit, fc_request(1).psn, fc_request(1).is_wr_ack)
+            fc_table.io.addr_a              := fc_request(1).qpn
+            fc_table.io.wr_en_a             := 1.U
+            fc_table.io.data_in_a.credit    := tmp_credit.credit
+            fc_table.io.data_in_a.acc_credit:= tmp_credit.acc_credit + fc_request(1).credit           
         }
+
     }.elsewhen(state1 === sTXRSP0){
         tx_rsp_fifo.io.in.valid             := 1.U
         tx_rsp_fifo.io.in.bits              := fc_request(1)
         tx_rsp_fifo.io.in.bits.valid_event  := true.B
     }.elsewhen(state1 === sTXRSP1){
-        when(tmp_credit.credit >= fc_request(1).credit){
+        when(c_tmp_id =/= n_tmp_id){
+            tmq_req(n_tmp_id)               := fc_request(1)
+            n_tmp_id                        := n_tmp_id + 1.U            
+        }.elsewhen(tmp_credit.credit >= fc_request(1).credit){
 			tx_rsp_fifo.io.in.valid 		        := 1.U 
             tx_rsp_fifo.io.in.bits              := fc_request(1)
             tx_rsp_fifo.io.in.bits.valid_event 	:= true.B 
@@ -174,11 +213,13 @@ class FC_TABLE() extends Module{
             when((fc_request(1).op_code === IB_OP_CODE.RC_WRITE_FIRST) || (fc_request(1).op_code === IB_OP_CODE.RC_DIRECT_FIRST)){
                 fc_table.io.addr_a              := fc_request(1).qpn
                 fc_table.io.wr_en_a             := 1.U
-                fc_table.io.data_in_a.credit    := tmp_credit.credit - CONFIG.MTU_WORD.U                      
+                fc_table.io.data_in_a.credit    := tmp_credit.credit - CONFIG.MTU_WORD.U
+                fc_table.io.data_in_a.acc_credit:= tmp_credit.acc_credit                      
             }.otherwise{
                 fc_table.io.addr_a              := fc_request(1).qpn
                 fc_table.io.wr_en_a             := 1.U
-                fc_table.io.data_in_a.credit    := tmp_credit.credit  - fc_request(1).credit                     
+                fc_table.io.data_in_a.credit    := tmp_credit.credit  - fc_request(1).credit
+                fc_table.io.data_in_a.acc_credit:= tmp_credit.acc_credit                     
             }
         }.otherwise{
             tmq_req(n_tmp_id)               := fc_request(1)
@@ -194,11 +235,13 @@ class FC_TABLE() extends Module{
             when(fc_request(1).op_code === IB_OP_CODE.RC_WRITE_FIRST){
                 fc_table.io.addr_a              := fc_request(1).qpn
                 fc_table.io.wr_en_a             := 1.U
-                fc_table.io.data_in_a.credit    := tmp_credit.credit - CONFIG.MTU_WORD.U                      
+                fc_table.io.data_in_a.credit    := tmp_credit.credit - CONFIG.MTU_WORD.U
+                fc_table.io.data_in_a.acc_credit:= tmp_credit.acc_credit                      
             }.otherwise{
                 fc_table.io.addr_a              := fc_request(1).qpn
                 fc_table.io.wr_en_a             := 1.U
-                fc_table.io.data_in_a.credit    := tmp_credit.credit  - fc_request(1).credit                     
+                fc_table.io.data_in_a.credit    := tmp_credit.credit  - fc_request(1).credit
+                fc_table.io.data_in_a.acc_credit:= tmp_credit.acc_credit                     
             }
         }
     }
@@ -206,99 +249,5 @@ class FC_TABLE() extends Module{
 
 
 
-	// switch(state){
-	// 	is(sIDLE){
-    //         when(fc_init_fifo.io.deq.fire()){
-    //             fc_table.io.addr_a              := fc_init_fifo.io.deq.bits.qpn
-    //             fc_table.io.wr_en_a             := 1.U
-    //             fc_table.io.data_in_a.credit    := fc_init_fifo.io.deq.bits.credit
-    //             state                           := sIDLE
-    //         }.elsewhen(fc_rx_fifo.io.deq.fire()){
-    //             rx_fc_request                      <> fc_rx_fifo.io.deq.bits
-    //             when(fc_rx_fifo.io.deq.bits.op_code === IB_OP_CODE.RC_ACK){
-    //                 fc_table.io.addr_b              := fc_rx_fifo.io.deq.bits.qpn
-    //                 state                           := sRXRSP                      
-    //             }
-    //         }.elsewhen(fc_txack_fifo.io.deq.fire()){
-    //             tx_fc_request                   <> fc_txack_fifo.io.deq.bits
-    //             fc_table.io.addr_b              := fc_txack_fifo.io.deq.bits.qpn
-    //             when(io.buffer_cnt < CONFIG.RX_BUFFER_FULL.U){
-    //                 state                   := sTXRSP1
-    //             }.otherwise{
-    //                 state                   := sTXRSP2
-    //             }
-    //         }.elsewhen(tx_event_lock){
-    //             fc_table.io.addr_b              := tmp_request.qpn
-    //             state                           := sTXRSP3
-    //         }.elsewhen(fc_tx_fifo.io.deq.fire()){
-    //             tx_fc_request                   <> fc_tx_fifo.io.deq.bits
-    //             fc_table.io.addr_b              := fc_tx_fifo.io.deq.bits.qpn
-    //             when(PKG_JUDGE.HAVE_DATA(fc_tx_fifo.io.deq.bits.op_code)){
-    //                 state                       := sTXRSP3
-    //             }.otherwise{
-    //                 state                       := sTXRSP1
-    //             }
-    //         }.otherwise{
-    //             state                           := sIDLE
-    //         }
-	// 	}
-	// 	is(sTXRSP1){
-	// 		when(io.fc2tx_rsp.ready){
-	// 			io.fc2tx_rsp.valid 		        := 1.U 
-    //             io.fc2tx_rsp.bits.valid_event 	:= true.B 
-    //             state                           := sIDLE
-	// 		}.otherwise{
-    //             state                           := sTXRSP1
-    //         }
-	// 	}
-	// 	is(sTXRSP2){
-	// 		when(io.fc2tx_rsp.ready & io.ack_event.ready){
-	// 			io.fc2tx_rsp.valid 		        := 1.U 
-    //             io.fc2tx_rsp.bits.valid_event 	:= false.B 
-	// 			io.ack_event.valid 		        := 1.U 
-	// 			io.ack_event.bits.ack_event(tx_fc_request.qpn, tx_fc_request.credit, tx_fc_request.psn, tx_fc_request.is_wr_ack)
-    //             state                           := sIDLE
-	// 		}.otherwise{
-    //             state                           := sTXRSP2
-    //         }
-	// 	}
-	// 	is(sTXRSP3){
-    //         tmp_credit.credit               := fc_table.io.data_out_b.credit
-    //         tmp_request                     := tx_fc_request
-    //         tx_event_lock                   := true.B
-    //         state                           := sTXRSP4
-	// 	}       
-	// 	is(sTXRSP4){
-	// 		when(io.fc2tx_rsp.ready & (tmp_credit.credit >= tmp_request.credit)){
-	// 			io.fc2tx_rsp.valid 		        := 1.U 
-    //             io.fc2tx_rsp.bits.valid_event 	:= true.B 
-    //             state                           := sIDLE
-    //             tx_event_lock                   := false.B
-    //             when(tmp_request.op_code === IB_OP_CODE.RC_WRITE_FIRST){
-    //                 fc_table.io.addr_a              := tmp_request.qpn
-    //                 fc_table.io.wr_en_a             := 1.U
-    //                 fc_table.io.data_in_a.credit    := tmp_credit.credit - CONFIG.MTU_WORD.U                      
-    //             }.otherwise{
-    //                 fc_table.io.addr_a              := tmp_request.qpn
-    //                 fc_table.io.wr_en_a             := 1.U
-    //                 fc_table.io.data_in_a.credit    := tmp_credit.credit  - tmp_request.credit                     
-    //             }
-	// 		}.otherwise{
-    //             tx_event_lock                   := true.B
-    //             state                           := sIDLE
-    //         }
-	// 	}                  
-	// 	is(sRXRSP){
-    //         rx_tmp_credit.credit            := fc_table.io.data_out_b.credit
-    //         state                           := sRXRSP1			
-	// 	}
-	// 	is(sRXRSP1){
-    //         fc_table.io.addr_a              := rx_fc_request.qpn
-    //         fc_table.io.wr_en_a             := 1.U
-    //         fc_table.io.data_in_a.credit    := rx_tmp_credit.credit + rx_fc_request.credit
-    //         state                           := sIDLE			
-	// 	}        	
-	// }
-    
 
 }

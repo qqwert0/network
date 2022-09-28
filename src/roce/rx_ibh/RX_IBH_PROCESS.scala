@@ -53,7 +53,7 @@ class RX_IBH_PROCESS() extends Module{
 				ibh_header_tmp          := ibh_data_fifo.io.deq.bits.data(CONFIG.IBH_HEADER_LEN-1,0).asTypeOf(ibh_header_tmp)
 				event_index				:= Cat(ibh_header_tmp.index_msb,ibh_header_tmp.index_lsb)
                 io.ibh_meta_out.valid   := 1.U    
-                io.ibh_meta_out.bits.ibh_gene(IB_OP_CODE.safe(ibh_header_tmp.op_code)._1, Util.reverse(ibh_header_tmp.qpn), Util.reverse(ibh_header_tmp.psn), ibh_header_tmp.ack.asBool, Util.reverse(ibh_meta_fifo.io.deq.bits.udp_length)) 
+                io.ibh_meta_out.bits.ibh_gene(IB_OP_CODE.safe(ibh_header_tmp.op_code)._1, Util.reverse(ibh_header_tmp.qpn), Util.reverse(ibh_header_tmp.psn), ibh_header_tmp.ack.asBool, ibh_meta_fifo.io.deq.bits.udp_length) 
                 when(ibh_data_fifo.io.deq.bits.last =/= 1.U){
                     state               := sPAYLOAD
                 }

@@ -13,6 +13,7 @@ class CREDIT_JUDGE() extends Module{
 	val io = IO(new Bundle{
 		val exh_event           = Flipped(Decoupled(new IBH_META()))
         val ack_event           = Flipped(Decoupled(new IBH_META()))
+        val fc2ack_rsp          = Flipped(Decoupled(new IBH_META()))
         val fc2tx_rsp           = Flipped(Decoupled(new IBH_META()))
 
         val tx2fc_req           = (Decoupled(new IBH_META()))
@@ -48,7 +49,8 @@ class CREDIT_JUDGE() extends Module{
 	// Collector.report(state===sIDLE, "CREDIT_JUDGE===sIDLE") 
 	ack_event_fifo.io.out.ready          := tx2fc_ack_fifo.io.in.ready
     exh_event_fifo.io.out.ready          := (!ack_event_fifo.io.out.valid) & tx2fc_req_fifo.io.in.ready   
-    io.fc2tx_rsp.ready                  := io.tx_exh_event.ready
+    io.fc2ack_rsp.ready                  := io.tx_exh_event.ready
+    io.fc2tx_rsp.ready                  := (!io.fc2ack_rsp.valid) & io.tx_exh_event.ready
 
     ToZero(tx2fc_req_fifo.io.in.bits)
     ToZero(tx2fc_req_fifo.io.in.valid)
@@ -83,7 +85,10 @@ class CREDIT_JUDGE() extends Module{
     //cycle 2
 
 
-    when(io.fc2tx_rsp.fire()){
+    when(io.fc2ack_rsp.fire()){
+        io.tx_exh_event.valid   := 1.U
+        io.tx_exh_event.bits    := io.fc2ack_rsp.bits
+    }.elsewhen(io.fc2tx_rsp.fire()){
         when(io.fc2tx_rsp.bits.valid_event){
             io.tx_exh_event.valid   := 1.U
             io.tx_exh_event.bits    := io.fc2tx_rsp.bits
@@ -91,40 +96,4 @@ class CREDIT_JUDGE() extends Module{
     }
 
 
-
-
-
-
-	// switch(state){
-	// 	is(sIDLE){
-    //         when(ack_event_fifo.io.out.fire()){
-    //             event_meta                  := ack_event_fifo.io.out.bits
-    //             tx2fc_ack_fifo.io.in.valid 	        := 1.U 
-    //             tx2fc_ack_fifo.io.in.bits.fc_req_generate(ack_event_fifo.io.out.bits.qpn, ack_event_fifo.io.out.bits.op_code, ack_event_fifo.io.out.bits.credit, ack_event_fifo.io.out.bits.psn, ack_event_fifo.io.out.bits.is_wr_ack )
-    //             state                       := sGENERATE
-    //         }.elsewhen(exh_event_fifo.io.out.fire()){
-    //             event_meta                  := exh_event_fifo.io.out.bits
-    //             when((exh_event_fifo.io.out.bits.op_code === IB_OP_CODE.RC_WRITE_FIRST) || (exh_event_fifo.io.out.bits.op_code === IB_OP_CODE.RC_DIRECT_FIRST)){
-    //                 tx2fc_req_fifo.io.in.valid 	        := 1.U  
-    //                 tx2fc_req_fifo.io.in.bits.fc_req_generate(exh_event_fifo.io.out.bits.qpn, exh_event_fifo.io.out.bits.op_code, CONFIG.MTU_WORD.U, 0.U, exh_event_fifo.io.out.bits.is_wr_ack )       
-    //             }.otherwise{
-    //                 tx2fc_req_fifo.io.in.valid 	        := 1.U  
-    //                 tx2fc_req_fifo.io.in.bits.fc_req_generate(exh_event_fifo.io.out.bits.qpn, exh_event_fifo.io.out.bits.op_code, (exh_event_fifo.io.out.bits.length>>6.U), 0.U, exh_event_fifo.io.out.bits.is_wr_ack )       
-    //             }                   
-    //             state                       := sGENERATE
-	// 		}.otherwise{
-    //             state                       := sIDLE
-    //         }
-	// 	}
-	// 	is(sGENERATE){
-	// 		when(io.fc2tx_rsp.fire()){
-    //             when(io.fc2tx_rsp.bits.valid_event){
-    //                 io.tx_exh_event.valid   := 1.U
-    //                 io.tx_exh_event.bits    <> event_meta 
-    //             }
-    //             state                       := sIDLE
-	// 		}
-	// 	}        
-
-	// }
 }

@@ -42,7 +42,8 @@ object CONFIG{
     def RETH_HEADER_LEN = 128
     def AETH_HEADER_LEN = 32
     def INIT_CREDIT = 800
-    def RX_BUFFER_FULL = 2000
+    def RX_BUFFER_FULL = 4000
+    def ACK_CREDIT = 1000
 }
 
 class IP_HEADER()extends Bundle{

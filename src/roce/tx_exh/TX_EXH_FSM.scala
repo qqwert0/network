@@ -30,7 +30,7 @@ class TX_EXH_FSM() extends Module{
     Collector.count(io.event_in.fire() & io.event_in.bits.qpn === 2.U & io.event_in.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN2 PKG")
     Collector.count(io.event_in.fire() & io.event_in.bits.qpn === 2.U & io.event_in.bits.op_code === IB_OP_CODE.RC_ACK, "QPN2 ACK")
 
-    val msn_tx_fifo = Module(new Queue(new MSN_RSP(), 16))
+    val msn_tx_fifo = Module(new Queue(new MSN_RSP(), 4))
     val event_fifo = Module(new Queue(new IBH_META(), 4))
 
     io.msn2tx_rsp                       <> msn_tx_fifo.io.enq

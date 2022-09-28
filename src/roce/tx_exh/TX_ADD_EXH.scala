@@ -22,6 +22,9 @@ class TX_ADD_EXH() extends Module{
         val tx_data_out	    = (Decoupled(new AXIS(CONFIG.DATA_WIDTH)))
 	})
 
+    Collector.fire(io.pkg_info)
+    Collector.fire(io.header_data_in)
+    Collector.fire(io.tx_data_out)
 	val pkg_info_fifo = Module(new Queue(new TX_PKG_INFO(),4))
 	val header_fifo = Module(new Queue(new AXIS(CONFIG.DATA_WIDTH),4))
 	val reth_fifo = Module(new Queue(new AXIS(CONFIG.DATA_WIDTH),16))
@@ -35,19 +38,21 @@ class TX_ADD_EXH() extends Module{
 	io.raw_data_in 		<> raw_fifo.io.enq
 
 
-    val write_first = RegInit(Bool(),true.B)
+    val write_first = RegInit(1.U(1.W))
 	val pkg_info = RegInit(0.U.asTypeOf(new TX_PKG_INFO()))
 	val sIDLE :: sHEADER :: sAETH :: sRETH :: sRAW :: Nil = Enum(5)
 	val state                   = RegInit(sIDLE)	
 	Collector.report(state===sIDLE, "TX_ADD_EXH===sIDLE")  
+	Collector.report(state===sHEADER, "TX_ADD_EXH===sHEADER")  
+	Collector.report(state===sRETH, "TX_ADD_EXH===sRETH")  
     val curr_word               = RegInit(0.U.asTypeOf(new AXIS(CONFIG.DATA_WIDTH)))
 	
 	pkg_info_fifo.io.deq.ready           := (state === sIDLE)
 
-	header_fifo.io.deq.ready     := ((state === sHEADER) ||((state === sRETH)&write_first&reth_fifo.io.deq.valid)||((state === sAETH)&write_first&aeth_fifo.io.deq.valid)) & io.tx_data_out.ready
-    reth_fifo.io.deq.ready       := ((header_fifo.io.deq.valid & write_first) || ~write_first) & (state === sRETH) & io.tx_data_out.ready
-    aeth_fifo.io.deq.ready       := ((header_fifo.io.deq.valid & write_first) || ~write_first) & (state === sAETH) & io.tx_data_out.ready
-    raw_fifo.io.deq.ready        := ((header_fifo.io.deq.valid & write_first) || ~write_first) & (state === sRAW) & io.tx_data_out.ready
+	header_fifo.io.deq.ready     := (state === sHEADER) & io.tx_data_out.ready
+    reth_fifo.io.deq.ready       := (state === sRETH) & io.tx_data_out.ready
+    aeth_fifo.io.deq.ready       := (state === sAETH) & io.tx_data_out.ready
+    raw_fifo.io.deq.ready        := (state === sRAW) & io.tx_data_out.ready
 
 
 	io.tx_data_out.valid 			:= 0.U 
@@ -58,18 +63,10 @@ class TX_ADD_EXH() extends Module{
 	switch(state){
 		is(sIDLE){
 			when(pkg_info_fifo.io.deq.fire()){
-                write_first := true.B
+                write_first := 1.U
 				pkg_info	:= pkg_info_fifo.io.deq.bits
 				when(pkg_info_fifo.io.deq.bits.hasHeader){
-					when(!pkg_info_fifo.io.deq.bits.hasPayload){
-						state						:= sHEADER
-					}.otherwise{
-						when(pkg_info_fifo.io.deq.bits.isAETH){
-							state                   := sAETH
-						}.otherwise{
-							state                   := sRETH
-						}
-					}
+					state	:= sHEADER
 				}.otherwise{
 					state	:= sRAW
 				}
@@ -77,20 +74,30 @@ class TX_ADD_EXH() extends Module{
 		}
 		is(sHEADER){
 			when(header_fifo.io.deq.fire()){
-                io.tx_data_out.valid 		:= 1.U
-				io.tx_data_out.bits.last 	:= 1.U
-                io.tx_data_out.bits.data 	:= header_fifo.io.deq.bits.data
-	            io.tx_data_out.bits.keep 	:= header_fifo.io.deq.bits.keep
-				state						:= sIDLE
+                curr_word                       <> header_fifo.io.deq.bits
+				when(!pkg_info.hasPayload){
+                    io.tx_data_out.valid 		:= 1.U
+					io.tx_data_out.bits.last 	:= 1.U
+                    io.tx_data_out.bits.data 	:= header_fifo.io.deq.bits.data
+	                io.tx_data_out.bits.keep 	:= header_fifo.io.deq.bits.keep
+					state						:= sIDLE
+				}.otherwise{
+                    curr_word.last              := 0.U
+                    when(pkg_info.isAETH){
+                        state                   := sAETH
+                    }.otherwise{
+                        state                   := sRETH    
+                    }
+                }
 			}
 		}
 		is(sAETH){
-			when(aeth_fifo.io.deq.fire()& (header_fifo.io.deq.fire() || ~write_first)){
+			when(aeth_fifo.io.deq.fire()){
                 io.tx_data_out.valid 		:= 1.U
 				io.tx_data_out.bits 		<> aeth_fifo.io.deq.bits                
-				when(write_first){
-                    io.tx_data_out.bits.data    := Cat(aeth_fifo.io.deq.bits.data(CONFIG.DATA_WIDTH-1,CONFIG.AETH_HEADER_LEN),header_fifo.io.deq.bits.data(CONFIG.AETH_HEADER_LEN-1,0))
-					write_first					:= false.B
+				when(write_first === 1.U){
+                    io.tx_data_out.bits.data    := Cat(aeth_fifo.io.deq.bits.data(CONFIG.DATA_WIDTH-1,CONFIG.AETH_HEADER_LEN),curr_word.data(CONFIG.AETH_HEADER_LEN-1,0))
+					write_first					:= 0.U
 				}               
                 when(aeth_fifo.io.deq.bits.last === 1.U){
                     state                       := sIDLE
@@ -98,12 +105,12 @@ class TX_ADD_EXH() extends Module{
 			}
 		}
 		is(sRETH){
-			when(reth_fifo.io.deq.fire()& (header_fifo.io.deq.fire() || ~write_first)){
+			when(reth_fifo.io.deq.fire()){
                 io.tx_data_out.valid 		:= 1.U
 				io.tx_data_out.bits			<> reth_fifo.io.deq.bits               
-				when(write_first){                  
-                    io.tx_data_out.bits.data 	:= Cat(reth_fifo.io.deq.bits.data(CONFIG.DATA_WIDTH-1,CONFIG.RETH_HEADER_LEN),header_fifo.io.deq.bits.data(CONFIG.RETH_HEADER_LEN-1,0))
-					write_first					:= false.B
+				when(write_first === 1.U){                  
+                    io.tx_data_out.bits.data 	:= Cat(reth_fifo.io.deq.bits.data(CONFIG.DATA_WIDTH-1,CONFIG.RETH_HEADER_LEN),curr_word.data(CONFIG.RETH_HEADER_LEN-1,0))
+					write_first					:= 0.U
 				}               
                 when(reth_fifo.io.deq.bits.last === 1.U){
                     state                       := sIDLE
@@ -122,3 +129,4 @@ class TX_ADD_EXH() extends Module{
 	}
 
 }
+

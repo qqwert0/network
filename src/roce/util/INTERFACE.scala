@@ -239,6 +239,7 @@ class FC_RSP()extends Bundle{
 
 class FC_STATE()extends Bundle{
 	val credit = UInt(24.W)
+    val acc_credit = UInt(13.W)
 }
 
 //

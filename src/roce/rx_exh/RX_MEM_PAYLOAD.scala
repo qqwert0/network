@@ -30,6 +30,13 @@ class RX_MEM_PAYLOAD() extends Module{
 	val sIDLE :: sAETH :: sRETH :: sRAW :: Nil = Enum(4)
 	val state          = RegInit(sIDLE)	
 	Collector.report(state===sIDLE, "RX_MEM_PAYLOAD===sIDLE")
+	Collector.report(state===sRETH, "RX_MEM_PAYLOAD===sRETH")
+    Collector.report(io.reth_data_in.ready)
+    Collector.report(io.reth_data_in.valid)
+    Collector.report(io.m_recv_data.ready)
+	Collector.report(io.m_recv_data.valid)
+    Collector.report(io.m_mem_write_data.ready)
+	Collector.report(io.m_mem_write_data.valid)
 	Collector.report(last_err, "RX_MEM_PAYLOAD::last_err")
 
 	Collector.fire(io.m_recv_data)

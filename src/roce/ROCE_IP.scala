@@ -44,15 +44,23 @@ class ROCE_IP() extends Module{
 	})
 
 
+	// class ila_rx_roce(seq:Seq[Data]) extends BaseILA(seq)
+  	// val mod_rx_roce = Module(new ila_rx_roce(Seq(	
+	// 	io.s_net_rx_data,
+  	// )))
+  	// mod_rx_roce.connect(clock)
+
 	Collector.fire(io.s_tx_meta)
 	Collector.fire(io.qp_init)
-	Collector.fire(io.s_send_data)
     Collector.fire(io.s_send_data)
-	Collector.fire(io.m_recv_data)
     Collector.fire(io.m_recv_data)
 	Collector.fire(io.m_net_tx_data)
 	Collector.fire(io.s_net_rx_data)
 
+    Collector.report(io.s_tx_meta.ready)
+    Collector.report(io.s_tx_meta.valid)     
+    Collector.report(io.s_send_data.ready)
+    Collector.report(io.s_send_data.valid)    
     Collector.report(io.m_recv_data.ready)
     Collector.report(io.m_recv_data.valid)
     Collector.report(io.m_recv_meta.ready)
@@ -93,6 +101,10 @@ class ROCE_IP() extends Module{
 
     Collector.report(rx_data_buffer.io.count > 4000.U, "rx_data_buffer_almost_full")
 
+    val recv_data_buffer = XQueue(new AXIS(CONFIG.DATA_WIDTH),4096)
+
+    Collector.report(recv_data_buffer.io.count > 4000.U, "recv_data_buffer_almost_full")
+
     val rx_exh_fsm = Module(new RX_EXH_FSM())
 
     //ibh
@@ -110,6 +122,7 @@ class ROCE_IP() extends Module{
     val rx_crc_process = Module(new RX_ICRC_PROCESS())
 
     val rx_ip_buffer = XQueue(new AXIS(CONFIG.DATA_WIDTH),4096)
+    Collector.trigger(rx_ip_buffer.io.almostfull.asBool(),"roce_rx_ip_buffer_almostfull")
     //////////EVENT_CTRL////////////////////
 
     val event_merge = Module(new EVENT_MERGE())
@@ -203,8 +216,9 @@ class ROCE_IP() extends Module{
 	rx_mem_payload.io.aeth_data_in              <>  aeth_rshift.io.out
 	rx_mem_payload.io.raw_data_in	            <>  rx_exh_payload.io.raw_data_out
     rx_data_buffer.io.in                        <>  rx_mem_payload.io.m_mem_write_data
-    io.m_recv_data                              <>  rx_mem_payload.io.m_recv_data
     io.m_mem_write_data	                        <>  rx_data_buffer.io.out
+    recv_data_buffer.io.in                      <>  rx_mem_payload.io.m_recv_data
+    io.m_recv_data                              <>  recv_data_buffer.io.out
 
 	rx_exh_fsm.io.ibh_meta_in                   <>  rx_drop_pkg.io.rx_meta_out
     rx_exh_fsm.io.msn2rx_rsp                    <>  msn_table.io.msn2rx_rsp
@@ -228,6 +242,7 @@ class ROCE_IP() extends Module{
 	credit_judge.io.exh_event                   <>  event_merge.io.tx_exh_event
     credit_judge.io.ack_event                   <>  event_merge.io.tx_ack_event         
     credit_judge.io.fc2tx_rsp                   <>  fc_table.io.fc2tx_rsp
+    credit_judge.io.fc2ack_rsp                  <>  fc_table.io.fc2ack_rsp
 
     qp_init.io.qp_init                          <>  io.qp_init
 

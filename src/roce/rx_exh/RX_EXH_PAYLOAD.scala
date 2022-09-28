@@ -31,7 +31,14 @@ class RX_EXH_PAYLOAD() extends Module{
 	val sIDLE :: sAETH :: sRETH :: sRAW :: Nil = Enum(4)
 	val state          = RegInit(sIDLE)	
 	Collector.report(state===sIDLE, "RX_EXH_PAYLOAD===sIDLE")
-	
+	Collector.report(state===sRETH, "RX_EXH_PAYLOAD===sRETH")
+
+    Collector.report(io.rx_ibh_data_in.ready)
+    Collector.report(io.rx_ibh_data_in.valid)
+
+    Collector.report(io.reth_data_out.ready)
+    Collector.report(io.reth_data_out.valid)
+
 	pkg_info_fifo.io.deq.ready := (state === sIDLE)
 
 	exh_data_fifo.io.deq.ready := 0.U

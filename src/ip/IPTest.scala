@@ -40,6 +40,8 @@ class IPTest extends Module{
 		val mac_ip_encode = Module(new mac_ip_encode())
 		val ip_handler = Module(new ip_handler())
 		val arp = Module(new arp())
+		val rx_buffer = XQueue(new AXIS(512),2048)
+		Collector.trigger(rx_buffer.io.almostfull.asBool(),"iptest_rx_buffer_almostfull")
 
 
 		//arp
@@ -61,7 +63,8 @@ class IPTest extends Module{
 		mac_ip_encode.io.mac_address			<> mac_address
 
 		//handler
-        ip_handler.io.data_in                   <> io.s_mac_rx
+        rx_buffer.io.in                   		<> io.s_mac_rx
+		ip_handler.io.data_in                   <> rx_buffer.io.out
 
 		ip_handler.io.icmp_out.ready 		 := 1.U
 		ip_handler.io.tcp_out					<> io.m_tcp_rx

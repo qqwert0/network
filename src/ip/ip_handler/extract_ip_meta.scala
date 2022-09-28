@@ -32,7 +32,7 @@ class extract_ip_meta extends Module{
             last            := 0.U
             type1           := io.data_in.bits.data(79,72)
             io.ipv4Type     := io.data_in.bits.data(79,72)
-            when(((myip_tmp === io.myip) | (myip_tmp === Cat(0xFFFF.U,0xFFFF.U)))){
+            when(((myip_tmp === io.myip) )){//| (myip_tmp === Cat(0xFFFF.U,0xFFFF.U)
                 addvalid        := 1.U
                 io.validipaddr  := 1.U
             }.otherwise{
