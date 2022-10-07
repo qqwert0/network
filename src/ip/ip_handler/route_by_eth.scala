@@ -6,6 +6,7 @@ import chisel3.util._
 import common.axi._
 import common.storage._
 import network.ip.util._
+import common.Collector
 
 
 class route_by_eth extends Module{
@@ -16,7 +17,10 @@ class route_by_eth extends Module{
         val ipv4_out          =   Decoupled(new AXIS(512))
         
 	})
-    io.data_in.ready   := io.ipv4_out.ready
+
+    Collector.trigger(io.ipv4_out.valid & (!io.ipv4_out.ready),"route_by_eth_overflow")
+
+    io.data_in.ready   := io.ARP_out.ready
     io.ARP_out.bits    := io.data_in.bits
     io.ipv4_out.bits   := io.data_in.bits
     io.ARP_out.valid   := 0.U

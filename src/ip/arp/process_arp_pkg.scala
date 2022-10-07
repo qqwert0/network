@@ -6,7 +6,8 @@ import common.axi._
 import common.storage._
 import chisel3.experimental.{DataMirror, Direction, requireIsChiselType}
 import network.ip.util._
-
+import common.Collector
+import common.BaseILA
 
 
 class process_arp_pkg extends Module{
@@ -19,8 +20,20 @@ class process_arp_pkg extends Module{
         val myip             =   Input(UInt(32.W))
 
 	})
-    // io.data_out         <> io.data_in
-    io.data_in.ready     := 1.U
+
+   	class ila_arp_proc(seq:Seq[Data]) extends BaseILA(seq)
+  	val mod_arp_proc = Module(new ila_arp_proc(Seq(	
+		io.data_in,
+        io.replymeta,
+        io.arpinsert
+  	)))
+  	mod_arp_proc.connect(clock) 
+
+
+    Collector.fire(io.data_in)
+    Collector.fire(io.replymeta)
+    Collector.fire(io.arpinsert)
+    io.data_in.ready     := io.replymeta.ready & io.arpinsert.ready
     val last             = RegInit(UInt(1.W), 1.U)
     io.replymeta.bits    := 0.U
     io.replymeta.valid   := 0.U

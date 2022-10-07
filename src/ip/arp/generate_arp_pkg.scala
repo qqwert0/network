@@ -6,7 +6,7 @@ import common.axi._
 import common.storage._
 import chisel3.experimental.{DataMirror, Direction, requireIsChiselType}
 import network.ip.util._
-
+import common.Collector
 
 
 class generate_arp_pkg extends Module{
@@ -17,9 +17,13 @@ class generate_arp_pkg extends Module{
         val mymac            =   Input(UInt(48.W))
         val myip             =   Input(UInt(32.W))
 	})
-    
-    io.replymeta.ready      := 1.U
-    io.requestmeta.ready    := 1.U
+
+    Collector.fire(io.replymeta)
+    Collector.fire(io.requestmeta)
+    Collector.fire(io.data_out)
+
+    io.replymeta.ready      := io.data_out.ready
+    io.requestmeta.ready    := !io.replymeta.valid & io.data_out.ready
     val temp                = Wire(UInt(16.W))
     val temp2                = Wire(UInt(144.W))
     val temp3                = Wire(UInt(32.W))

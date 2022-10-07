@@ -50,9 +50,10 @@ class ROCE_IP() extends Module{
   	// )))
   	// mod_rx_roce.connect(clock)
 
-	Collector.fire(io.s_tx_meta)
 	Collector.fire(io.qp_init)
+	Collector.fire(io.s_tx_meta)
     Collector.fire(io.s_send_data)
+    Collector.fire(io.m_recv_meta)
     Collector.fire(io.m_recv_data)
 	Collector.fire(io.m_net_tx_data)
 	Collector.fire(io.s_net_rx_data)

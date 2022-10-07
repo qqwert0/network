@@ -30,11 +30,13 @@ class TX_MEM_PAYLOAD() extends Module{
 	io.pkg_info                     <> pkg_info_fifo.io.enq
 
 	val length_cnt = RegInit(0.U(16.W))
+	val last_err	= RegInit(false.B)
 	val pkg_info = RegInit(0.U.asTypeOf(new PKG_INFO()))
 	val mem_read_length_err = RegInit(false.B)
 	val sIDLE :: sAETH :: sRETH :: sRAW :: Nil = Enum(4)
 	val state          = RegInit(sIDLE)	
-	Collector.report(state===sIDLE, "TX_MEM_PAYLOAD===sIDLE")  
+	Collector.report(state===sIDLE, "TX_MEM_PAYLOAD===sIDLE") 
+	Collector.report(last_err, "TX_MEM_PAYLOAD::last_err") 
 	
 	pkg_info_fifo.io.deq.ready := (state === sIDLE)
 
@@ -53,6 +55,17 @@ class TX_MEM_PAYLOAD() extends Module{
 	io.raw_data_out.bits.data 		:= 0.U
 	io.raw_data_out.bits.keep 		:= 0.U
 	io.raw_data_out.bits.last 		:= 0.U	
+
+
+	class ila_tx_mem(seq:Seq[Data]) extends BaseILA(seq)
+	val inst_tx_mem = Module(new ila_tx_mem(Seq(	
+		last_err,
+		length_cnt,
+		io.s_send_data,
+		state,
+		pkg_info.pkg_length
+	)))
+	inst_tx_mem.connect(clock)
 
 
 	switch(state){
@@ -80,6 +93,9 @@ class TX_MEM_PAYLOAD() extends Module{
 					io.aeth_data_out.bits.keep 		:= io.s_mem_read_data.bits.keep
 					length_cnt						:= length_cnt + 64.U;
 					when(length_cnt === (pkg_info.pkg_length - 64.U)){
+						when(io.s_mem_read_data.bits.last =/= 1.U){
+							last_err				:= true.B
+						}
 						length_cnt					:= 0.U
 						io.aeth_data_out.bits.last 	:= 1.U
 						state						:= sIDLE
@@ -93,6 +109,9 @@ class TX_MEM_PAYLOAD() extends Module{
 					io.aeth_data_out.bits.keep 		:= io.s_send_data.bits.keep
 					length_cnt						:= length_cnt + 64.U;
 					when(length_cnt === (pkg_info.pkg_length - 64.U)){
+						when(io.s_send_data.bits.last =/= 1.U){
+							last_err				:= true.B
+						}						
 						length_cnt					:= 0.U
 						io.aeth_data_out.bits.last 	:= 1.U
 						state						:= sIDLE
@@ -110,6 +129,9 @@ class TX_MEM_PAYLOAD() extends Module{
 					io.reth_data_out.bits.keep 		:= io.s_mem_read_data.bits.keep
 					length_cnt						:= length_cnt + 64.U;
 					when(length_cnt === (pkg_info.pkg_length - 64.U)){
+						when(io.s_mem_read_data.bits.last =/= 1.U){
+							last_err				:= true.B
+						}						
 						length_cnt					:= 0.U
 						io.reth_data_out.bits.last 	:= 1.U
 						state						:= sIDLE
@@ -123,6 +145,9 @@ class TX_MEM_PAYLOAD() extends Module{
 					io.reth_data_out.bits.keep 		:= io.s_send_data.bits.keep
 					length_cnt						:= length_cnt + 64.U;
 					when(length_cnt === (pkg_info.pkg_length - 64.U)){
+						when(io.s_send_data.bits.last =/= 1.U){
+							last_err				:= true.B
+						}						
 						length_cnt					:= 0.U
 						io.reth_data_out.bits.last 	:= 1.U
 						state						:= sIDLE
@@ -139,6 +164,9 @@ class TX_MEM_PAYLOAD() extends Module{
 					io.raw_data_out.bits.keep 		:= io.s_mem_read_data.bits.keep
 					length_cnt						:= length_cnt + 64.U;
 					when(length_cnt === (pkg_info.pkg_length - 64.U)){
+						when(io.s_mem_read_data.bits.last =/= 1.U){
+							last_err				:= true.B
+						}						
 						length_cnt					:= 0.U
 						io.raw_data_out.bits.last 	:= 1.U
 						state						:= sIDLE
@@ -152,6 +180,9 @@ class TX_MEM_PAYLOAD() extends Module{
 					io.raw_data_out.bits.keep 		:= io.s_send_data.bits.keep
 					length_cnt						:= length_cnt + 64.U;	
 					when(length_cnt === (pkg_info.pkg_length - 64.U)){
+						when(io.s_send_data.bits.last =/= 1.U){
+							last_err				:= true.B
+						}						
 						length_cnt					:= 0.U
 						io.raw_data_out.bits.last 	:= 1.U
 						state						:= sIDLE

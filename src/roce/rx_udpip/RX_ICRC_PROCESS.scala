@@ -83,7 +83,7 @@ class RX_ICRC_PROCESS() extends Module{
 
 			when(pre_word.keep === -1.S(8.W).asTypeOf(UInt(64.W)) ){
 				ip_data_fifo.io.in.bits.last	:= 1.U
-				ip_data_fifo.io.in.bits.keep	:= -1.S.asTypeOf(UInt(64.W)) 
+				ip_data_fifo.io.in.bits.keep	:= -1.S(4.W).asTypeOf(UInt(64.W)) 
 				ip_data_fifo.io.in.bits.data	:= pre_word.data
 				ip_data_fifo.io.in.valid	:= 1.U							
 			}.elsewhen(pre_word.keep === -1.S(12.W).asTypeOf(UInt(64.W)) ){

@@ -40,7 +40,7 @@ class IPTest extends Module{
 		val mac_ip_encode = Module(new mac_ip_encode())
 		val ip_handler = Module(new ip_handler())
 		val arp = Module(new arp())
-		val rx_buffer = XQueue(new AXIS(512),2048)
+		val rx_buffer = XQueue(new AXIS(512),512)
 		Collector.trigger(rx_buffer.io.almostfull.asBool(),"iptest_rx_buffer_almostfull")
 
 

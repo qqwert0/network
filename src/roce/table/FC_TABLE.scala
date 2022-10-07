@@ -80,13 +80,6 @@ class FC_TABLE() extends Module{
     ToZero(tx_rsp_fifo.io.in.valid)
     ToZero(tx_rsp_fifo.io.in.bits)
 
-   	class ila_fc_table(seq:Seq[Data]) extends BaseILA(seq)
-  	val mod_fc_table = Module(new ila_fc_table(Seq(	
-		state0,
-        state1,
-        state2
-  	)))
-  	mod_fc_table.connect(clock) 
 
 
     //cycle 1

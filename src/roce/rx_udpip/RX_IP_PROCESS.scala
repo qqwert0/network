@@ -17,7 +17,6 @@ class RX_IP_PROCESS() extends Module{
 	})
 
 
-
 	val ip_header_tmp = Wire(new IP_HEADER())
     ip_header_tmp                  := 0.U.asTypeOf(ip_header_tmp)
 
@@ -63,8 +62,6 @@ class RX_IP_PROCESS() extends Module{
                     state               := sIDLE
                 }                
             }
-			
-
 		}		
 	}
 

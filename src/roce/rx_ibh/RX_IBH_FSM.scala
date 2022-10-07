@@ -37,16 +37,6 @@ class RX_IBH_FSM() extends Module{
     val psn_err                 = RegInit(false.B)
     Collector.report(psn_err)		
 
-   	class ila_ibh_fsm(seq:Seq[Data]) extends BaseILA(seq)
-  	val mod_ibh_fsm = Module(new ila_ibh_fsm(Seq(	
-		psn_err,
-        psn_rx_fifo.io.deq.bits.state,
-        psn_rx_fifo.io.deq.bits.meta.qpn,
-        psn_rx_fifo.io.deq.bits.meta.psn,
-        psn_rx_fifo.io.deq.bits.meta.op_code,
-  	)))
-  	mod_ibh_fsm.connect(clock) 
-
 	ibh_meta_fifo.io.deq.ready                    := io.rx2psn_req.ready
     psn_rx_fifo.io.deq.ready                := io.ibh_meta_out.ready & io.drop_info_out.ready //& io.nak_event_out.ready
 
