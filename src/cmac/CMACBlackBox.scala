@@ -3,6 +3,10 @@ package network.cmac
 import chisel3._
 import chisel3.util._
 
+class CMACBlackBox1 extends CMACBlackBox{
+
+}
+
 class CMACBlackBox extends BlackBox{
 	val io = IO(new Bundle{
         

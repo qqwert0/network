@@ -8,10 +8,10 @@ import common.axi._
 import common.ToZero
 
 
-class XCMAC (BOARD : String="u280") extends RawModule{
+class XCMAC (BOARD : String="u280", IS_PART_1:Boolean=false) extends RawModule{
     require (Set("u50", "u280") contains BOARD)
 	
-	def getTCL(path:String = "Example: /home/amax/hhj/rdma_new2021/rdma2021/rdma2021.srcs/sources_1/ip") = {
+	def getTCL(path:String = "") = {
         val board_inf = BOARD match {
             case "u280" => "qsfp0_4x"
             case "u50" => "qsfp_4x"
@@ -24,8 +24,15 @@ class XCMAC (BOARD : String="u280") extends RawModule{
             case "u280" => "156.25"
             case "u50" => "161.1328125"
         }
-		val s1 = "create_ip -name cmac_usplus -vendor xilinx.com -library ip -version 3.1 -module_name CMACBlackBox\n"
-		val s2 = f"set_property -dict [list CONFIG.CMAC_CAUI4_MODE {1} CONFIG.NUM_LANES {4x25} CONFIG.GT_REF_CLK_FREQ {${ref_clk_freq}} CONFIG.USER_INTERFACE {AXIS} CONFIG.TX_FLOW_CONTROL {0} CONFIG.RX_FLOW_CONTROL {0} CONFIG.CMAC_CORE_SELECT {CMACE4_X0Y6} CONFIG.GT_GROUP_SELECT {X0Y40~X0Y43} CONFIG.LANE1_GT_LOC {X0Y40} CONFIG.LANE2_GT_LOC {X0Y41} CONFIG.LANE3_GT_LOC {X0Y42} CONFIG.LANE4_GT_LOC {X0Y43} CONFIG.LANE5_GT_LOC {NA} CONFIG.LANE6_GT_LOC {NA} CONFIG.LANE7_GT_LOC {NA} CONFIG.LANE8_GT_LOC {NA} CONFIG.LANE9_GT_LOC {NA} CONFIG.LANE10_GT_LOC {NA} CONFIG.RX_GT_BUFFER {1} CONFIG.GT_RX_BUFFER_BYPASS {0} CONFIG.ETHERNET_BOARD_INTERFACE {${board_inf}} CONFIG.DIFFCLK_BOARD_INTERFACE {${diff_clk_inf}} CONFIG.Component_Name {CMACBlackBox}] [get_ips CMACBlackBox]\n"
+		val s1 = IS_PART_1 match{
+			case false	=> "create_ip -name cmac_usplus -vendor xilinx.com -library ip -version 3.1 -module_name CMACBlackBox\n"
+			case true	=> "create_ip -name cmac_usplus -vendor xilinx.com -library ip -version 3.1 -module_name CMACBlackBox1\n"
+		} 
+
+		val s2 = IS_PART_1 match {
+			case false	=> f"set_property -dict [list CONFIG.CMAC_CAUI4_MODE {1} CONFIG.NUM_LANES {4x25} CONFIG.GT_REF_CLK_FREQ {${ref_clk_freq}} CONFIG.USER_INTERFACE {AXIS} CONFIG.TX_FLOW_CONTROL {0} CONFIG.RX_FLOW_CONTROL {0} CONFIG.CMAC_CORE_SELECT {CMACE4_X0Y6} CONFIG.GT_GROUP_SELECT {X0Y40~X0Y43} CONFIG.LANE1_GT_LOC {X0Y40} CONFIG.LANE2_GT_LOC {X0Y41} CONFIG.LANE3_GT_LOC {X0Y42} CONFIG.LANE4_GT_LOC {X0Y43} CONFIG.LANE5_GT_LOC {NA} CONFIG.LANE6_GT_LOC {NA} CONFIG.LANE7_GT_LOC {NA} CONFIG.LANE8_GT_LOC {NA} CONFIG.LANE9_GT_LOC {NA} CONFIG.LANE10_GT_LOC {NA} CONFIG.RX_GT_BUFFER {1} CONFIG.GT_RX_BUFFER_BYPASS {0} CONFIG.ETHERNET_BOARD_INTERFACE {${board_inf}} CONFIG.DIFFCLK_BOARD_INTERFACE {${diff_clk_inf}} CONFIG.Component_Name {CMACBlackBox}] [get_ips CMACBlackBox]\n"
+			case true	=> "set_property -dict [list CONFIG.CMAC_CAUI4_MODE {1} CONFIG.NUM_LANES {4x25} CONFIG.GT_REF_CLK_FREQ {156.25} CONFIG.USER_INTERFACE {AXIS} CONFIG.TX_FLOW_CONTROL {0} CONFIG.RX_FLOW_CONTROL {0} CONFIG.CMAC_CORE_SELECT {CMACE4_X0Y7} CONFIG.GT_GROUP_SELECT {X0Y44~X0Y47} CONFIG.LANE1_GT_LOC {X0Y44} CONFIG.LANE2_GT_LOC {X0Y45} CONFIG.LANE3_GT_LOC {X0Y46} CONFIG.LANE4_GT_LOC {X0Y47} CONFIG.LANE5_GT_LOC {NA} CONFIG.LANE6_GT_LOC {NA} CONFIG.LANE7_GT_LOC {NA} CONFIG.LANE8_GT_LOC {NA} CONFIG.LANE9_GT_LOC {NA} CONFIG.LANE10_GT_LOC {NA} CONFIG.RX_GT_BUFFER {1} CONFIG.GT_RX_BUFFER_BYPASS {0} CONFIG.ETHERNET_BOARD_INTERFACE {qsfp1_4x} CONFIG.DIFFCLK_BOARD_INTERFACE {qsfp1_156mhz} CONFIG.Component_Name {CMACBlackBox1}] [get_ips CMACBlackBox1]\n"
+		}
 		val s3 = "update_compile_order -fileset sources_1\n"
 		println(s1 + s2 + s3)
 	}
@@ -55,14 +62,17 @@ class XCMAC (BOARD : String="u280") extends RawModule{
 
     val tx_padding          = withClockAndReset(io.user_clk,!io.user_arstn){Module(new Frame_Padding_512())}
 
-    tx_padding.io.data_in           <> io.s_net_tx
-    fifo_tx_data.io.in               <> tx_padding.io.data_out
-    fifo_tx_pkg.io.in              <> fifo_tx_data.io.out
+    tx_padding.io.data_in 			<> io.s_net_tx
+    fifo_tx_data.io.in				<> tx_padding.io.data_out
+    fifo_tx_pkg.io.in				<> fifo_tx_data.io.out
 
     io.m_net_rx                     <> fifo_rx_data.io.out    
 
     
-    val cmac_inst = Module(new CMACBlackBox())
+    val cmac_inst = IS_PART_1 match {
+		case false	=> Module(new CMACBlackBox())
+		case true	=> Module(new CMACBlackBox1())
+	}	
 	
     val rx_rst                      = Wire(Bool())
     val tx_rst                      = Wire(Bool())

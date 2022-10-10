@@ -61,6 +61,9 @@ class FC_TABLE() extends Module{
     val state1                  = RegInit(sIDLE)
     val state2                  = RegInit(sIDLE)
     // Collector.report(state0===sIDLE, "FC_TABLE===sIDLE") 
+    Collector.fire(ack_event_fifo.io.in)
+    Collector.trigger(c_tmp_id === n_tmp_id,"no_wait_event")
+
     fc_table.io.addr_a                 := 0.U
     fc_table.io.addr_b                 := 0.U
     fc_table.io.wr_en_a                := 0.U

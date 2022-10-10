@@ -21,13 +21,13 @@ class process_arp_pkg extends Module{
 
 	})
 
-   	class ila_arp_proc(seq:Seq[Data]) extends BaseILA(seq)
-  	val mod_arp_proc = Module(new ila_arp_proc(Seq(	
-		io.data_in,
-        io.replymeta,
-        io.arpinsert
-  	)))
-  	mod_arp_proc.connect(clock) 
+   	// class ila_arp_proc(seq:Seq[Data]) extends BaseILA(seq)
+  	// val mod_arp_proc = Module(new ila_arp_proc(Seq(	
+	// 	io.data_in,
+    //     io.replymeta,
+    //     io.arpinsert
+  	// )))
+  	// mod_arp_proc.connect(clock) 
 
 
     Collector.fire(io.data_in)

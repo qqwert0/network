@@ -22,7 +22,6 @@ class RX_EXH_FSM() extends Module{
 
         val rx2msn_req          = (Decoupled(new MSN_REQ()))
         val rx2msn_wr           = (Decoupled(new MSN_REQ()))
-        val rx2fc_req           = (Decoupled(new IBH_META()))
         val l_read_req_pop_req  = (Decoupled(UInt(24.W)))
         val r_read_req_req      = (Decoupled(new RD_REQ()))
         val rq_req	            = (Decoupled(new CMPT_META()))
@@ -39,7 +38,7 @@ class RX_EXH_FSM() extends Module{
     Collector.count(io.ibh_meta_in.fire() & io.ibh_meta_in.bits.qpn === 2.U & io.ibh_meta_in.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN2 PKG")
     Collector.count(io.ibh_meta_in.fire() & io.ibh_meta_in.bits.qpn === 2.U & io.ibh_meta_in.bits.op_code === IB_OP_CODE.RC_ACK, "QPN2 ACK")
 
-    val ibh_meta_fifo = Module(new Queue(new IBH_META(), 16))
+    val ibh_meta_fifo = Module(new Queue(new IBH_META(), 1024))
     val msn_rx_fifo = Module(new Queue(new MSN_RSP(), 16))
     
 
@@ -48,7 +47,6 @@ class RX_EXH_FSM() extends Module{
     val mem_write_cmd_fifo = XQueue(new MEM_CMD(), 4)
     val recv_meta_fifo = XQueue(new RECV_META(), 4)
     val rx2msn_wr_fifo = XQueue(new MSN_REQ(), 4)
-    val rx2fc_req_fifo = XQueue(new IBH_META(), 4)
     val r_read_req_fifo = XQueue(new RD_REQ(), 4)
     val rq_req_fifo = XQueue(new CMPT_META(), 4)
     val ack_event_fifo = XQueue(new IBH_META(), 4)
@@ -65,7 +63,6 @@ class RX_EXH_FSM() extends Module{
     io.m_mem_write_cmd                  <> mem_write_cmd_fifo.io.out
     io.m_recv_meta                      <> recv_meta_fifo.io.out
     io.rx2msn_wr                        <> rx2msn_wr_fifo.io.out
-    io.rx2fc_req                        <> rx2fc_req_fifo.io.out
     io.r_read_req_req                   <> r_read_req_fifo.io.out
     io.rq_req                           <> rq_req_fifo.io.out
     io.ack_event                        <> ack_event_fifo.io.out
@@ -92,8 +89,8 @@ class RX_EXH_FSM() extends Module{
 
 
 	ibh_meta_fifo.io.deq.ready      := Mux((ibh_meta_fifo.io.deq.bits.op_code === IB_OP_CODE.RC_READ_RESP_FIRST | ibh_meta_fifo.io.deq.bits.op_code === IB_OP_CODE.RC_READ_RESP_ONLY) , (io.rx2msn_req.ready & io.l_read_req_pop_req.ready) , io.rx2msn_req.ready )
-    msn_rx_fifo.io.deq.ready        := !r_read_req_fifo.io.almostfull & (~consume_read_addr) & !pkg_type2exh_fifo.io.almostfull & !pkg_type2mem_fifo.io.almostfull & !ack_event_fifo.io.almostfull & !mem_write_cmd_fifo.io.almostfull & !recv_meta_fifo.io.almostfull & ~rx2fc_req_fifo.io.almostfull & !rx2msn_wr_fifo.io.almostfull & !rq_req_fifo.io.almostfull
-    l_read_pop_fifo.io.deq.ready    := (state === sMETA) && consume_read_addr & !r_read_req_fifo.io.almostfull & !pkg_type2exh_fifo.io.almostfull & !pkg_type2mem_fifo.io.almostfull & !ack_event_fifo.io.almostfull & !mem_write_cmd_fifo.io.almostfull & !recv_meta_fifo.io.almostfull & ~rx2fc_req_fifo.io.almostfull & !rx2msn_wr_fifo.io.almostfull & !rq_req_fifo.io.almostfull
+    msn_rx_fifo.io.deq.ready        := !r_read_req_fifo.io.almostfull & (~consume_read_addr) & !pkg_type2exh_fifo.io.almostfull & !pkg_type2mem_fifo.io.almostfull & !ack_event_fifo.io.almostfull & !mem_write_cmd_fifo.io.almostfull & !recv_meta_fifo.io.almostfull & !rx2msn_wr_fifo.io.almostfull & !rq_req_fifo.io.almostfull
+    l_read_pop_fifo.io.deq.ready    := (state === sMETA) && consume_read_addr & !r_read_req_fifo.io.almostfull & !pkg_type2exh_fifo.io.almostfull & !pkg_type2mem_fifo.io.almostfull & !ack_event_fifo.io.almostfull & !mem_write_cmd_fifo.io.almostfull & !recv_meta_fifo.io.almostfull & !rx2msn_wr_fifo.io.almostfull & !rq_req_fifo.io.almostfull
 
     Collector.report(io.m_mem_write_cmd.ready)
     Collector.report(io.m_recv_meta.ready)
@@ -105,9 +102,7 @@ class RX_EXH_FSM() extends Module{
     ToZero(rx2msn_wr_fifo.io.in.valid)
     ToZero(rx2msn_wr_fifo.io.in.bits)
     io.rx2msn_req.valid             := 0.U
-    io.rx2msn_req.bits              := 0.U.asTypeOf(io.rx2msn_req.bits)
-    ToZero(rx2fc_req_fifo.io.in.valid)
-    ToZero(rx2fc_req_fifo.io.in.bits)   
+    io.rx2msn_req.bits              := 0.U.asTypeOf(io.rx2msn_req.bits)   
     io.l_read_req_pop_req.valid     := 0.U
     io.l_read_req_pop_req.bits      := 0.U.asTypeOf(io.l_read_req_pop_req.bits)
 
@@ -317,10 +312,6 @@ class RX_EXH_FSM() extends Module{
                 pkg_type2mem_fifo.io.in.bits.pkg_type   := PKG_TYPE.RAW 
                 pkg_type2mem_fifo.io.in.bits.data_to_mem:= true.B
                 pkg_type2mem_fifo.io.in.bits.length     := payload_length
-            }
-            is(IB_OP_CODE.RC_ACK){
-                rx2fc_req_fifo.io.in.valid              := 1.U
-                rx2fc_req_fifo.io.in.bits               := ibh_meta
             }
             is(IB_OP_CODE.RC_DIRECT_FIRST){
                 payload_length                  := ibh_meta.udp_length -8.U-12.U-16.U-4.U //UDP, BTH, RETH, CRC

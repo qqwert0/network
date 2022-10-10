@@ -16,7 +16,7 @@ import network.ip._
 import network.roce._
 import network.roce.util._
 
-class NetworkStack extends RawModule{
+class NetworkStack(IS_PART_1:Boolean = false) extends RawModule{
 
 
     val io = IO(new Bundle{
@@ -55,7 +55,7 @@ class NetworkStack extends RawModule{
 
 
 
-	val cmac = Module(new XCMAC())
+	val cmac = Module(new XCMAC(IS_PART_1=IS_PART_1))
 	cmac.getTCL("Path to your ip")
 
 	cmac.io.pin				<> io.pin
@@ -69,15 +69,6 @@ class NetworkStack extends RawModule{
     val ip = withClockAndReset(io.user_clk, io.sw_reset || !io.user_arstn){Module(new IPTest())}
 
     val roce = withClockAndReset(io.user_clk, io.sw_reset || !io.user_arstn){Module(new ROCE_IP())}
-
-	// withClockAndReset(io.user_clk, !io.user_arstn){
-	// 	class ila_cmac(seq:Seq[Data]) extends BaseILA(seq)
-	// 	val inst_cmac = Module(new ila_cmac(Seq(	
-	// 		cmac.io.s_net_tx,
-	// 		cmac.io.m_net_rx,
-	// 	)))
-	// 	inst_cmac.connect(io.user_clk)
-	// }
 
     ip.io.s_mac_rx          <> withClockAndReset(io.user_clk, !io.user_arstn){RegSlice(2)(cmac.io.m_net_rx)}
 	cmac.io.s_net_tx		<> withClockAndReset(io.user_clk, !io.user_arstn){RegSlice(2)(ip.io.m_mac_tx)}

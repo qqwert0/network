@@ -56,18 +56,6 @@ class TX_MEM_PAYLOAD() extends Module{
 	io.raw_data_out.bits.keep 		:= 0.U
 	io.raw_data_out.bits.last 		:= 0.U	
 
-
-	class ila_tx_mem(seq:Seq[Data]) extends BaseILA(seq)
-	val inst_tx_mem = Module(new ila_tx_mem(Seq(	
-		last_err,
-		length_cnt,
-		io.s_send_data,
-		state,
-		pkg_info.pkg_length
-	)))
-	inst_tx_mem.connect(clock)
-
-
 	switch(state){
 		is(sIDLE){
 			when(pkg_info_fifo.io.deq.fire()){

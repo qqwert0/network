@@ -119,12 +119,12 @@ class TX_ADD_ICRC() extends Module{
 							io.tx_data_out.valid	:= ip_data_fifo.io.out.valid
 						}.elsewhen(ip_data_fifo.io.out.bits.keep === -1.S(60.W).asTypeOf(UInt(64.W)) ){
 							io.tx_data_out.bits.last	:= 1.U
-							io.tx_data_out.bits.keep	:= -1.S.asTypeOf(UInt(64.W)) 
+							io.tx_data_out.bits.keep	:= -1.S(64.W).asTypeOf(UInt(64.W)) 
 							io.tx_data_out.bits.data	:= Cat(crc,ip_data_fifo.io.out.bits.data(479,0))
 							io.tx_data_out.valid	:= ip_data_fifo.io.out.valid
 						}.otherwise{
 							io.tx_data_out.bits.last	:= 1.U
-							io.tx_data_out.bits.keep	:= -1.S.asTypeOf(UInt(64.W)) 
+							io.tx_data_out.bits.keep	:= -1.S(64.W).asTypeOf(UInt(64.W)) 
 							io.tx_data_out.bits.data	:= ip_data_fifo.io.out.bits.data
 							io.tx_data_out.valid	:= ip_data_fifo.io.out.valid							
 						}

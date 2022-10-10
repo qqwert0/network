@@ -107,6 +107,7 @@ class ROCE_IP() extends Module{
     Collector.report(recv_data_buffer.io.count > 4000.U, "recv_data_buffer_almost_full")
 
     val rx_exh_fsm = Module(new RX_EXH_FSM())
+    val rx_exh_ack = Module(new RX_EXH_ACK())
 
     //ibh
     val rx_drop_pkg = Module(new RX_DROP_PKG())
@@ -221,11 +222,13 @@ class ROCE_IP() extends Module{
     recv_data_buffer.io.in                      <>  rx_mem_payload.io.m_recv_data
     io.m_recv_data                              <>  recv_data_buffer.io.out
 
-	rx_exh_fsm.io.ibh_meta_in                   <>  rx_drop_pkg.io.rx_meta_out
+	rx_exh_fsm.io.ibh_meta_in                   <>  rx_exh_ack.io.meta_out
     rx_exh_fsm.io.msn2rx_rsp                    <>  msn_table.io.msn2rx_rsp
     rx_exh_fsm.io.l_read_req_pop_rsp            <>  local_read_vaddr_q.io.pop_rsp
 	rx_exh_fsm.io.m_mem_write_cmd               <>  io.m_mem_write_cmd
     rx_exh_fsm.io.m_recv_meta                   <>  io.m_recv_meta
+
+    rx_exh_ack.io.meta_in                       <>  rx_drop_pkg.io.rx_meta_out
    
     ///////////////////////////EVENT CTRL///////////////////////    
 
@@ -261,10 +264,10 @@ class ROCE_IP() extends Module{
 	psn_table.io.tx2psn_req	                    <>  tx_ibh_fsm.io.tx2psn_req
 	psn_table.io.psn_init	                    <>  qp_init.io.psn_init
 		   
-	fc_table.io.rx2fc_req                       <>  rx_exh_fsm.io.rx2fc_req	
+	fc_table.io.rx2fc_req                       <>  rx_exh_ack.io.rx2fc_req	
 	fc_table.io.tx2fc_req	                    <>  credit_judge.io.tx2fc_req
     fc_table.io.tx2fc_ack	                    <>  credit_judge.io.tx2fc_ack
-    fc_table.io.buffer_cnt	                    <>  rx_data_buffer.io.count
+    fc_table.io.buffer_cnt	                    <>  recv_data_buffer.io.count
     fc_table.io.fc_init                         <>  qp_init.io.fc_init		  	
 
     conn_table.io.tx2conn_req	                <>  tx_ibh_fsm.io.tx2conn_req
