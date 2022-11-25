@@ -8,7 +8,7 @@ import common.axi._
 import common.ToZero
 
 
-class XCMAC (BOARD : String="u280", IS_PART_1:Boolean=false) extends RawModule{
+class XCMAC (BOARD : String="u280", PART_ID:Int=0) extends RawModule{
     require (Set("u50", "u280") contains BOARD)
 	
 	def getTCL(path:String = "") = {
@@ -24,15 +24,18 @@ class XCMAC (BOARD : String="u280", IS_PART_1:Boolean=false) extends RawModule{
             case "u280" => "156.25"
             case "u50" => "161.1328125"
         }
-		val s1 = IS_PART_1 match{
-			case false	=> "create_ip -name cmac_usplus -vendor xilinx.com -library ip -version 3.1 -module_name CMACBlackBox\n"
-			case true	=> "create_ip -name cmac_usplus -vendor xilinx.com -library ip -version 3.1 -module_name CMACBlackBox1\n"
+		val s1 = PART_ID match{
+			case 0	=> "create_ip -name cmac_usplus -vendor xilinx.com -library ip -version 3.1 -module_name CMACBlackBox\n"
+			case 1	=> "create_ip -name cmac_usplus -vendor xilinx.com -library ip -version 3.1 -module_name CMACBlackBox1\n"
+            case 2	=> "create_ip -name cmac_usplus -vendor xilinx.com -library ip -version 3.1 -module_name CMACBlackBox2\n"
+            case 3	=> "create_ip -name cmac_usplus -vendor xilinx.com -library ip -version 3.1 -module_name CMACBlackBox3\n"
 		} 
 
-		val s2 = IS_PART_1 match {
-			case false	=> f"set_property -dict [list CONFIG.CMAC_CAUI4_MODE {1} CONFIG.NUM_LANES {4x25} CONFIG.GT_REF_CLK_FREQ {${ref_clk_freq}} CONFIG.USER_INTERFACE {AXIS} CONFIG.TX_FLOW_CONTROL {0} CONFIG.RX_FLOW_CONTROL {0} CONFIG.CMAC_CORE_SELECT {CMACE4_X0Y6} CONFIG.GT_GROUP_SELECT {X0Y40~X0Y43} CONFIG.LANE1_GT_LOC {X0Y40} CONFIG.LANE2_GT_LOC {X0Y41} CONFIG.LANE3_GT_LOC {X0Y42} CONFIG.LANE4_GT_LOC {X0Y43} CONFIG.LANE5_GT_LOC {NA} CONFIG.LANE6_GT_LOC {NA} CONFIG.LANE7_GT_LOC {NA} CONFIG.LANE8_GT_LOC {NA} CONFIG.LANE9_GT_LOC {NA} CONFIG.LANE10_GT_LOC {NA} CONFIG.RX_GT_BUFFER {1} CONFIG.GT_RX_BUFFER_BYPASS {0} CONFIG.ETHERNET_BOARD_INTERFACE {${board_inf}} CONFIG.DIFFCLK_BOARD_INTERFACE {${diff_clk_inf}} CONFIG.Component_Name {CMACBlackBox}] [get_ips CMACBlackBox]\n"
-			case true	=> "set_property -dict [list CONFIG.CMAC_CAUI4_MODE {1} CONFIG.NUM_LANES {4x25} CONFIG.GT_REF_CLK_FREQ {156.25} CONFIG.USER_INTERFACE {AXIS} CONFIG.TX_FLOW_CONTROL {0} CONFIG.RX_FLOW_CONTROL {0} CONFIG.CMAC_CORE_SELECT {CMACE4_X0Y7} CONFIG.GT_GROUP_SELECT {X0Y44~X0Y47} CONFIG.LANE1_GT_LOC {X0Y44} CONFIG.LANE2_GT_LOC {X0Y45} CONFIG.LANE3_GT_LOC {X0Y46} CONFIG.LANE4_GT_LOC {X0Y47} CONFIG.LANE5_GT_LOC {NA} CONFIG.LANE6_GT_LOC {NA} CONFIG.LANE7_GT_LOC {NA} CONFIG.LANE8_GT_LOC {NA} CONFIG.LANE9_GT_LOC {NA} CONFIG.LANE10_GT_LOC {NA} CONFIG.RX_GT_BUFFER {1} CONFIG.GT_RX_BUFFER_BYPASS {0} CONFIG.ETHERNET_BOARD_INTERFACE {qsfp1_4x} CONFIG.DIFFCLK_BOARD_INTERFACE {qsfp1_156mhz} CONFIG.Component_Name {CMACBlackBox1}] [get_ips CMACBlackBox1]\n"
-		}
+		val s2 = PART_ID match {
+			case 0	=> f"set_property -dict [list CONFIG.CMAC_CAUI4_MODE {1} CONFIG.NUM_LANES {4x25} CONFIG.GT_REF_CLK_FREQ {${ref_clk_freq}} CONFIG.USER_INTERFACE {AXIS} CONFIG.TX_FLOW_CONTROL {0} CONFIG.RX_FLOW_CONTROL {0} CONFIG.CMAC_CORE_SELECT {CMACE4_X0Y6} CONFIG.GT_GROUP_SELECT {X0Y40~X0Y43} CONFIG.LANE1_GT_LOC {X0Y40} CONFIG.LANE2_GT_LOC {X0Y41} CONFIG.LANE3_GT_LOC {X0Y42} CONFIG.LANE4_GT_LOC {X0Y43} CONFIG.LANE5_GT_LOC {NA} CONFIG.LANE6_GT_LOC {NA} CONFIG.LANE7_GT_LOC {NA} CONFIG.LANE8_GT_LOC {NA} CONFIG.LANE9_GT_LOC {NA} CONFIG.LANE10_GT_LOC {NA} CONFIG.RX_GT_BUFFER {1} CONFIG.GT_RX_BUFFER_BYPASS {0} CONFIG.ETHERNET_BOARD_INTERFACE {${board_inf}} CONFIG.DIFFCLK_BOARD_INTERFACE {${diff_clk_inf}} CONFIG.Component_Name {CMACBlackBox}] [get_ips CMACBlackBox]\n"
+			case 1	=> "set_property -dict [list CONFIG.CMAC_CAUI4_MODE {1} CONFIG.NUM_LANES {4x25} CONFIG.GT_REF_CLK_FREQ {156.25} CONFIG.USER_INTERFACE {AXIS} CONFIG.TX_FLOW_CONTROL {0} CONFIG.RX_FLOW_CONTROL {0} CONFIG.CMAC_CORE_SELECT {CMACE4_X0Y7} CONFIG.GT_GROUP_SELECT {X0Y44~X0Y47} CONFIG.LANE1_GT_LOC {X0Y44} CONFIG.LANE2_GT_LOC {X0Y45} CONFIG.LANE3_GT_LOC {X0Y46} CONFIG.LANE4_GT_LOC {X0Y47} CONFIG.LANE5_GT_LOC {NA} CONFIG.LANE6_GT_LOC {NA} CONFIG.LANE7_GT_LOC {NA} CONFIG.LANE8_GT_LOC {NA} CONFIG.LANE9_GT_LOC {NA} CONFIG.LANE10_GT_LOC {NA} CONFIG.RX_GT_BUFFER {1} CONFIG.GT_RX_BUFFER_BYPASS {0} CONFIG.ETHERNET_BOARD_INTERFACE {qsfp1_4x} CONFIG.DIFFCLK_BOARD_INTERFACE {qsfp1_156mhz} CONFIG.Component_Name {CMACBlackBox1}] [get_ips CMACBlackBox1]\n"
+            case _  => "Undefined todo"
+        }
 		val s3 = "update_compile_order -fileset sources_1\n"
 		println(s1 + s2 + s3)
 	}
@@ -69,9 +72,11 @@ class XCMAC (BOARD : String="u280", IS_PART_1:Boolean=false) extends RawModule{
     io.m_net_rx                     <> fifo_rx_data.io.out    
 
     
-    val cmac_inst = IS_PART_1 match {
-		case false	=> Module(new CMACBlackBox())
-		case true	=> Module(new CMACBlackBox1())
+    val cmac_inst = PART_ID match {
+		case 0	=> Module(new CMACBlackBox())
+		case 1	=> Module(new CMACBlackBox1())
+        case 2	=> Module(new CMACBlackBox2())
+        case 3	=> Module(new CMACBlackBox3())
 	}	
 	
     val rx_rst                      = Wire(Bool())

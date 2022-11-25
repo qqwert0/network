@@ -3,6 +3,14 @@ package network.cmac
 import chisel3._
 import chisel3.util._
 
+class CMACBlackBox3 extends CMACBlackBox{
+
+}
+
+class CMACBlackBox2 extends CMACBlackBox{
+
+}
+
 class CMACBlackBox1 extends CMACBlackBox{
 
 }

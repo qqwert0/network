@@ -21,10 +21,10 @@ class CREDIT_JUDGE() extends Module{
         val tx_exh_event	    = (Decoupled(new IBH_META()))
 	})
 
-    Collector.count(io.exh_event.fire() & io.exh_event.bits.qpn === 1.U & io.exh_event.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN1 PKG")
-    Collector.count(io.ack_event.fire() & io.ack_event.bits.qpn === 1.U & io.ack_event.bits.op_code === IB_OP_CODE.RC_ACK, "QPN1 ACK")
-    Collector.count(io.exh_event.fire() & io.exh_event.bits.qpn === 2.U & io.exh_event.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN2 PKG")
-    Collector.count(io.ack_event.fire() & io.ack_event.bits.qpn === 2.U & io.ack_event.bits.op_code === IB_OP_CODE.RC_ACK, "QPN2 ACK")
+    // Collector.count(io.exh_event.fire() & io.exh_event.bits.qpn === 1.U & io.exh_event.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN1 PKG")
+    // Collector.count(io.ack_event.fire() & io.ack_event.bits.qpn === 1.U & io.ack_event.bits.op_code === IB_OP_CODE.RC_ACK, "QPN1 ACK")
+    // Collector.count(io.exh_event.fire() & io.exh_event.bits.qpn === 2.U & io.exh_event.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN2 PKG")
+    // Collector.count(io.ack_event.fire() & io.ack_event.bits.qpn === 2.U & io.ack_event.bits.op_code === IB_OP_CODE.RC_ACK, "QPN2 ACK")
 
 
     val exh_event_fifo = XQueue(new IBH_META(), entries=4)

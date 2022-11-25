@@ -22,10 +22,10 @@ class EVENT_MERGE() extends Module{
         val pkg_info	        = (Decoupled(new PKG_INFO()))
 	})
 
-    Collector.count(io.tx_local_event.fire() & io.tx_local_event.bits.qpn === 1.U & io.tx_local_event.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN1 PKG")
-    Collector.count(io.rx_ack_event.fire() & io.rx_ack_event.bits.qpn === 1.U & io.rx_ack_event.bits.op_code === IB_OP_CODE.RC_ACK, "QPN1 ACK")
-    Collector.count(io.tx_local_event.fire() & io.tx_local_event.bits.qpn === 2.U & io.tx_local_event.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN2 PKG")
-    Collector.count(io.rx_ack_event.fire() & io.rx_ack_event.bits.qpn === 2.U & io.rx_ack_event.bits.op_code === IB_OP_CODE.RC_ACK, "QPN2 ACK")
+    // Collector.count(io.tx_local_event.fire() & io.tx_local_event.bits.qpn === 1.U & io.tx_local_event.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN1 PKG")
+    // Collector.count(io.rx_ack_event.fire() & io.rx_ack_event.bits.qpn === 1.U & io.rx_ack_event.bits.op_code === IB_OP_CODE.RC_ACK, "QPN1 ACK")
+    // Collector.count(io.tx_local_event.fire() & io.tx_local_event.bits.qpn === 2.U & io.tx_local_event.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN2 PKG")
+    // Collector.count(io.rx_ack_event.fire() & io.rx_ack_event.bits.qpn === 2.U & io.rx_ack_event.bits.op_code === IB_OP_CODE.RC_ACK, "QPN2 ACK")
 
     // val rx_nak_fifo = Module(new Queue(new IBH_META(), 16))
     val rx_ack_fifo = Module(new Queue(new IBH_META(), 64))
