@@ -8,36 +8,29 @@ import common.axi._
 import common.ToZero
 
 
-class XCMAC (BOARD : String="u280", PART_ID:Int=0) extends RawModule{
+class XCMAC (BOARD: String="u280", PORT: Int = 0, IP_CORE_NAME: String="CMACBlackBox") extends RawModule{
     require (Set("u50", "u280") contains BOARD)
 	
-	def getTCL(path:String = "") = {
-        val board_inf = BOARD match {
-            case "u280" => "qsfp0_4x"
-            case "u50" => "qsfp_4x"
+	def getTCL() = {
+        val board_inf = (BOARD, PORT) match {
+            case ("u280", 0) => "qsfp0_4x"
+            case ("u280", 1) => "qsfp1_4x"
+            case ("u50", _) => "qsfp_4x"
+            case default => require(false, "Invalid board and port pair for XCMAC!")
         }
-        val diff_clk_inf = BOARD match {
-            case "u280" => "qsfp0_156mhz"
-            case "u50" => "qsfp_161mhz"
+        val diff_clk_inf = (BOARD, PORT) match {
+            case ("u280", 0) => "qsfp0_156mhz"
+            case ("u280", 1) => "qsfp1_156mhz"
+            case ("u50", _) => "qsfp_161mhz"
+            case default => require(false, "Invalid board and port pair for XCMAC!")
         }
         val ref_clk_freq = BOARD match {
             case "u280" => "156.25"
             case "u50" => "161.1328125"
         }
-		val s1 = PART_ID match{
-			case 0	=> "create_ip -name cmac_usplus -vendor xilinx.com -library ip -version 3.1 -module_name CMACBlackBox\n"
-			case 1	=> "create_ip -name cmac_usplus -vendor xilinx.com -library ip -version 3.1 -module_name CMACBlackBox1\n"
-            case 2	=> "create_ip -name cmac_usplus -vendor xilinx.com -library ip -version 3.1 -module_name CMACBlackBox2\n"
-            case 3	=> "create_ip -name cmac_usplus -vendor xilinx.com -library ip -version 3.1 -module_name CMACBlackBox3\n"
-		} 
-
-		val s2 = PART_ID match {
-			case 0	=> f"set_property -dict [list CONFIG.CMAC_CAUI4_MODE {1} CONFIG.NUM_LANES {4x25} CONFIG.GT_REF_CLK_FREQ {${ref_clk_freq}} CONFIG.USER_INTERFACE {AXIS} CONFIG.TX_FLOW_CONTROL {0} CONFIG.RX_FLOW_CONTROL {0} CONFIG.CMAC_CORE_SELECT {CMACE4_X0Y6} CONFIG.GT_GROUP_SELECT {X0Y40~X0Y43} CONFIG.LANE1_GT_LOC {X0Y40} CONFIG.LANE2_GT_LOC {X0Y41} CONFIG.LANE3_GT_LOC {X0Y42} CONFIG.LANE4_GT_LOC {X0Y43} CONFIG.LANE5_GT_LOC {NA} CONFIG.LANE6_GT_LOC {NA} CONFIG.LANE7_GT_LOC {NA} CONFIG.LANE8_GT_LOC {NA} CONFIG.LANE9_GT_LOC {NA} CONFIG.LANE10_GT_LOC {NA} CONFIG.RX_GT_BUFFER {1} CONFIG.GT_RX_BUFFER_BYPASS {0} CONFIG.ETHERNET_BOARD_INTERFACE {${board_inf}} CONFIG.DIFFCLK_BOARD_INTERFACE {${diff_clk_inf}} CONFIG.Component_Name {CMACBlackBox}] [get_ips CMACBlackBox]\n"
-			case 1	=> "set_property -dict [list CONFIG.CMAC_CAUI4_MODE {1} CONFIG.NUM_LANES {4x25} CONFIG.GT_REF_CLK_FREQ {156.25} CONFIG.USER_INTERFACE {AXIS} CONFIG.TX_FLOW_CONTROL {0} CONFIG.RX_FLOW_CONTROL {0} CONFIG.CMAC_CORE_SELECT {CMACE4_X0Y7} CONFIG.GT_GROUP_SELECT {X0Y44~X0Y47} CONFIG.LANE1_GT_LOC {X0Y44} CONFIG.LANE2_GT_LOC {X0Y45} CONFIG.LANE3_GT_LOC {X0Y46} CONFIG.LANE4_GT_LOC {X0Y47} CONFIG.LANE5_GT_LOC {NA} CONFIG.LANE6_GT_LOC {NA} CONFIG.LANE7_GT_LOC {NA} CONFIG.LANE8_GT_LOC {NA} CONFIG.LANE9_GT_LOC {NA} CONFIG.LANE10_GT_LOC {NA} CONFIG.RX_GT_BUFFER {1} CONFIG.GT_RX_BUFFER_BYPASS {0} CONFIG.ETHERNET_BOARD_INTERFACE {qsfp1_4x} CONFIG.DIFFCLK_BOARD_INTERFACE {qsfp1_156mhz} CONFIG.Component_Name {CMACBlackBox1}] [get_ips CMACBlackBox1]\n"
-            case _  => "Undefined todo"
-        }
-		val s3 = "update_compile_order -fileset sources_1\n"
-		println(s1 + s2 + s3)
+		val s1 = f"create_ip -name cmac_usplus -vendor xilinx.com -library ip -version 3.1 -module_name ${IP_CORE_NAME}\n"
+		val s2 = f"set_property -dict [list CONFIG.CMAC_CAUI4_MODE {1} CONFIG.NUM_LANES {4x25} CONFIG.GT_REF_CLK_FREQ {${ref_clk_freq}} CONFIG.USER_INTERFACE {AXIS} CONFIG.TX_FLOW_CONTROL {0} CONFIG.RX_FLOW_CONTROL {0} CONFIG.CMAC_CORE_SELECT {CMACE4_X0Y6} CONFIG.GT_GROUP_SELECT {X0Y40~X0Y43} CONFIG.LANE1_GT_LOC {X0Y40} CONFIG.LANE2_GT_LOC {X0Y41} CONFIG.LANE3_GT_LOC {X0Y42} CONFIG.LANE4_GT_LOC {X0Y43} CONFIG.LANE5_GT_LOC {NA} CONFIG.LANE6_GT_LOC {NA} CONFIG.LANE7_GT_LOC {NA} CONFIG.LANE8_GT_LOC {NA} CONFIG.LANE9_GT_LOC {NA} CONFIG.LANE10_GT_LOC {NA} CONFIG.RX_GT_BUFFER {1} CONFIG.GT_RX_BUFFER_BYPASS {0} CONFIG.ETHERNET_BOARD_INTERFACE {${board_inf}} CONFIG.DIFFCLK_BOARD_INTERFACE {${diff_clk_inf}} CONFIG.Component_Name {CMACBlackBox}] [get_ips ${IP_CORE_NAME}]\n"
+		println(s1 + s2)
 	}
 
 
@@ -59,25 +52,22 @@ class XCMAC (BOARD : String="u280", PART_ID:Int=0) extends RawModule{
 
 
     val fifo_tx_data        = XConverter(new AXIS(512), io.user_clk, io.user_arstn, io.net_clk)
-    val fifo_rx_data        = XConverter(new AXIS(512), io.net_clk, io.user_arstn, io.user_clk)
+    val fifo_rx_data        = XConverter(new AXIS(512), io.net_clk, io.net_rstn, io.user_clk)
 
     val fifo_tx_pkg         = withClockAndReset(io.net_clk,!io.net_rstn){XPacketQueue(512,512)}
 
     val tx_padding          = withClockAndReset(io.user_clk,!io.user_arstn){Module(new Frame_Padding_512())}
 
-    tx_padding.io.data_in 			<> io.s_net_tx
-    fifo_tx_data.io.in				<> tx_padding.io.data_out
-    fifo_tx_pkg.io.in				<> fifo_tx_data.io.out
+    tx_padding.io.data_in           <> io.s_net_tx
+    fifo_tx_data.io.in             	<> withClockAndReset(io.user_clk,!io.user_arstn){RegSlice(2)(tx_padding.io.data_out)}
+    fifo_tx_pkg.io.in              	<> fifo_tx_data.io.out
+
+	val tx_regdelay					= withClockAndReset(io.net_clk,!io.net_rstn){RegSlice(1)(fifo_tx_pkg.io.out)}
 
     io.m_net_rx                     <> fifo_rx_data.io.out    
 
     
-    val cmac_inst = PART_ID match {
-		case 0	=> Module(new CMACBlackBox())
-		case 1	=> Module(new CMACBlackBox1())
-        case 2	=> Module(new CMACBlackBox2())
-        case 3	=> Module(new CMACBlackBox3())
-	}	
+    val cmac_inst = Module(new CMACBlackBox(IP_CORE_NAME=IP_CORE_NAME))
 	
     val rx_rst                      = Wire(Bool())
     val tx_rst                      = Wire(Bool())
@@ -181,11 +171,11 @@ class XCMAC (BOARD : String="u280", PART_ID:Int=0) extends RawModule{
     cmac_inst.io.rx_axis_tlast          <> fifo_rx_data.io.in.bits.last
     cmac_inst.io.rx_axis_tkeep          <> fifo_rx_data.io.in.bits.keep
 
-    cmac_inst.io.tx_axis_tready              <> fifo_tx_pkg.io.out.ready
-    cmac_inst.io.tx_axis_tvalid              <> fifo_tx_pkg.io.out.valid
-    cmac_inst.io.tx_axis_tdata               <> fifo_tx_pkg.io.out.bits.data
-    cmac_inst.io.tx_axis_tlast               <> fifo_tx_pkg.io.out.bits.last
-    cmac_inst.io.tx_axis_tkeep               <> fifo_tx_pkg.io.out.bits.keep
+    cmac_inst.io.tx_axis_tvalid              <> tx_regdelay.valid
+    cmac_inst.io.tx_axis_tready              <> tx_regdelay.ready
+    cmac_inst.io.tx_axis_tdata               <> tx_regdelay.bits.data
+    cmac_inst.io.tx_axis_tlast               <> tx_regdelay.bits.last
+    cmac_inst.io.tx_axis_tkeep               <> tx_regdelay.bits.keep
     cmac_inst.io.tx_axis_tuser               <> 0.U
         //ctrl interface
     
@@ -255,5 +245,4 @@ class Frame_Padding_512 extends Module{
 			}
 		}
 	}
-
 }

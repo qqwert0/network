@@ -11,6 +11,11 @@ object APP_OP_CODE extends ChiselEnum{
   val reserve1  = Value//note that each state must be declared, otherwise the cast will warn you
 }
 
+class RoceMsg()extends Bundle{
+    val addr        = UInt(34.W) 
+    val length      = UInt(32.W) 
+}
+
 class TX_META()extends Bundle{
 	val rdma_cmd = APP_OP_CODE()
 	val qpn = UInt(24.W)
@@ -358,11 +363,13 @@ class RECV_META()extends Bundle{
     val msg_num     = UInt(24.W) 
     val pkg_num     = UInt(21.W) // mtu minimum 1k，2G/1K=2M=21bits 
     val pkg_total   = UInt(21.W) //1 based
-    def recv_meta_generate(qpn_i:UInt, msg_num_i:UInt, pkg_num_i:UInt, pkg_total_i:UInt)={
+    val length      = UInt(16.W)
+    def recv_meta_generate(qpn_i:UInt, msg_num_i:UInt, pkg_num_i:UInt, pkg_total_i:UInt, length_i:UInt)={
         qpn         := qpn_i
         msg_num     := msg_num_i
         pkg_num     := pkg_num_i
         pkg_total   := pkg_total_i      
+        length      := length_i
     }  
 }
 

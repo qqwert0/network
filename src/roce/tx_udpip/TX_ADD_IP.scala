@@ -31,7 +31,7 @@ class TX_ADD_IP() extends Module{
 
 	val sIDLE :: sPAYLOAD :: Nil = Enum(2)
 	val state                   = RegInit(sIDLE)	
-	Collector.report(state===sIDLE, "TX_ADD_IP===sIDLE")
+	// Collector.report(state===sIDLE, "TX_ADD_IP===sIDLE")
 	
 
 	ip_meta_fifo.io.deq.ready      := (state === sIDLE) & io.tx_data_out.ready & ip_data_fifo.io.deq.valid

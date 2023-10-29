@@ -92,8 +92,8 @@ class RX_EXH_FSM() extends Module{
     msn_rx_fifo.io.deq.ready        := !r_read_req_fifo.io.almostfull & (~consume_read_addr) & !pkg_type2exh_fifo.io.almostfull & !pkg_type2mem_fifo.io.almostfull & !ack_event_fifo.io.almostfull & !mem_write_cmd_fifo.io.almostfull & !recv_meta_fifo.io.almostfull & !rx2msn_wr_fifo.io.almostfull & !rq_req_fifo.io.almostfull
     l_read_pop_fifo.io.deq.ready    := (state === sMETA) && consume_read_addr & !r_read_req_fifo.io.almostfull & !pkg_type2exh_fifo.io.almostfull & !pkg_type2mem_fifo.io.almostfull & !ack_event_fifo.io.almostfull & !mem_write_cmd_fifo.io.almostfull & !recv_meta_fifo.io.almostfull & !rx2msn_wr_fifo.io.almostfull & !rq_req_fifo.io.almostfull
 
-    Collector.report(io.m_mem_write_cmd.ready)
-    Collector.report(io.m_recv_meta.ready)
+    // Collector.report(io.m_mem_write_cmd.ready)
+    // Collector.report(io.m_recv_meta.ready)
 
     ToZero(mem_write_cmd_fifo.io.in.valid)
     ToZero(mem_write_cmd_fifo.io.in.bits)
@@ -153,7 +153,7 @@ class RX_EXH_FSM() extends Module{
     //cycle 2
 
     msn_meta1                       := msn_meta
-    // num_pkg_total                   := (msn_meta.meta.length + CONFIG.MTU.U-1.U) / CONFIG.MTU.U 
+    num_pkg_total                   := (msn_meta.meta.length + CONFIG.MTU.U-1.U) / CONFIG.MTU.U 
     when(state === sMETA){
         when(l_read_pop_fifo.io.deq.fire()){
             consume_read_addr           := false.B
@@ -317,7 +317,7 @@ class RX_EXH_FSM() extends Module{
                 payload_length                  := ibh_meta.udp_length -8.U-12.U-16.U-4.U //UDP, BTH, RETH, CRC
                 remain_length                   := ibh_meta.length - payload_length
                 recv_meta_fifo.io.in.valid            := 1.U
-                recv_meta_fifo.io.in.bits.recv_meta_generate(ibh_meta.qpn,msn_meta1.msn_state.msn+1.U,1.U,num_pkg_total)//fix me add pkg_num pkg total msg num
+                recv_meta_fifo.io.in.bits.recv_meta_generate(ibh_meta.qpn,msn_meta1.msn_state.msn+1.U,1.U,num_pkg_total,payload_length)//fix me add pkg_num pkg total msg num
                 ack_event_fifo.io.in.valid              := 1.U
                 credit_tmp                      := payload_length>>6.U
                 ack_event_fifo.io.in.bits.ack_event(ibh_meta.qpn, ibh_meta.psn, credit_tmp, ibh_meta.is_wr_ack)
@@ -332,7 +332,7 @@ class RX_EXH_FSM() extends Module{
                 payload_length                  := ibh_meta.udp_length -8.U-12.U-16.U-4.U //UDP, BTH, RETH, CRC
                 remain_length                   := ibh_meta.length - payload_length
                 recv_meta_fifo.io.in.valid            := 1.U
-                recv_meta_fifo.io.in.bits.recv_meta_generate(ibh_meta.qpn,msn_meta1.msn_state.msn+1.U,1.U,1.U)//fix me add pkg_num pkg total msg num
+                recv_meta_fifo.io.in.bits.recv_meta_generate(ibh_meta.qpn,msn_meta1.msn_state.msn+1.U,1.U,1.U,payload_length)//fix me add pkg_num pkg total msg num
                 ack_event_fifo.io.in.valid              := 1.U
                 credit_tmp                      := payload_length>>6.U
                 ack_event_fifo.io.in.bits.ack_event(ibh_meta.qpn, ibh_meta.psn, credit_tmp, ibh_meta.is_wr_ack)
@@ -347,7 +347,7 @@ class RX_EXH_FSM() extends Module{
                 payload_length                  := ibh_meta.udp_length -8.U-12.U-4.U //UDP, BTH, CRC
                 remain_length                   := msn_meta1.msn_state.length - payload_length
                 recv_meta_fifo.io.in.valid            := 1.U
-                recv_meta_fifo.io.in.bits.recv_meta_generate(ibh_meta.qpn,msn_meta1.msn_state.msn,msn_meta1.msn_state.pkg_num+1.U,msn_meta1.msn_state.pkg_total)//fix me add pkg_num pkg total msg num                  
+                recv_meta_fifo.io.in.bits.recv_meta_generate(ibh_meta.qpn,msn_meta1.msn_state.msn,msn_meta1.msn_state.pkg_num+1.U,msn_meta1.msn_state.pkg_total,payload_length)//fix me add pkg_num pkg total msg num                  
                 ack_event_fifo.io.in.valid              := 1.U
                 credit_tmp                      := payload_length>>6.U
                 ack_event_fifo.io.in.bits.ack_event(ibh_meta.qpn, ibh_meta.psn, credit_tmp, ibh_meta.is_wr_ack)
@@ -362,7 +362,7 @@ class RX_EXH_FSM() extends Module{
                 payload_length                  := ibh_meta.udp_length -8.U-12.U-4.U //UDP, BTH, CRC
                 remain_length                   := msn_meta1.msn_state.length - payload_length
                 recv_meta_fifo.io.in.valid            := 1.U
-                recv_meta_fifo.io.in.bits.recv_meta_generate(ibh_meta.qpn,msn_meta1.msn_state.msn,msn_meta1.msn_state.pkg_num+1.U,msn_meta1.msn_state.pkg_total)//fix me add pkg_num pkg total msg num                    
+                recv_meta_fifo.io.in.bits.recv_meta_generate(ibh_meta.qpn,msn_meta1.msn_state.msn,msn_meta1.msn_state.pkg_num+1.U,msn_meta1.msn_state.pkg_total,payload_length)//fix me add pkg_num pkg total msg num                    
                 ack_event_fifo.io.in.valid              := 1.U
                 credit_tmp                      := payload_length>>6.U
                 ack_event_fifo.io.in.bits.ack_event(ibh_meta.qpn, ibh_meta.psn, credit_tmp, ibh_meta.is_wr_ack)

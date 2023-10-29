@@ -35,7 +35,7 @@ class CMACTop extends RawModule{
 	val user_rstn = mmcm.io.LOCKED
 
 	val cmac = Module(new XCMAC())
-	cmac.getTCL("Path to your ip")
+	cmac.getTCL()
 
 	cmac_pin		<> cmac.io.pin
 	

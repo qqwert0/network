@@ -23,6 +23,8 @@ class RX_EXH_PAYLOAD() extends Module{
 	val pkg_info_fifo = Module(new Queue(new RX_PKG_INFO(),16))
 	val exh_data_fifo = Module(new Queue(new AXIS(CONFIG.DATA_WIDTH),16))
 	Collector.fire(io.rx_ibh_data_in)
+	Collector.fire(io.reth_data_out)
+	Collector.fire(io.raw_data_out)
 	io.pkg_info 			<> pkg_info_fifo.io.enq
 	io.rx_ibh_data_in 		<> exh_data_fifo.io.enq
 
@@ -33,11 +35,11 @@ class RX_EXH_PAYLOAD() extends Module{
 	Collector.report(state===sIDLE, "RX_EXH_PAYLOAD===sIDLE")
 	Collector.report(state===sRETH, "RX_EXH_PAYLOAD===sRETH")
 
-    Collector.report(io.rx_ibh_data_in.ready)
-    Collector.report(io.rx_ibh_data_in.valid)
+    // Collector.report(io.rx_ibh_data_in.ready)
+    // Collector.report(io.rx_ibh_data_in.valid)
 
-    Collector.report(io.reth_data_out.ready)
-    Collector.report(io.reth_data_out.valid)
+    // Collector.report(io.reth_data_out.ready)
+    // Collector.report(io.reth_data_out.valid)
 
 	pkg_info_fifo.io.deq.ready := (state === sIDLE)
 

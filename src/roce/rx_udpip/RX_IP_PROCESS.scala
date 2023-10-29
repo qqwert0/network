@@ -22,7 +22,7 @@ class RX_IP_PROCESS() extends Module{
 
 	val sIDLE :: sPAYLOAD :: Nil = Enum(2)
 	val state                       = RegInit(sIDLE)	
-	Collector.report(state===sIDLE, "RX_IP_PROCESS===sIDLE")
+	// Collector.report(state===sIDLE, "RX_IP_PROCESS===sIDLE")
 	
 	io.rx_data_in.ready         := ((state === sIDLE) & io.ip_meta_out.ready & io.rx_data_out.ready) | ((state === sPAYLOAD) & io.rx_data_out.ready) 
 

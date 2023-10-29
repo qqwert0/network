@@ -30,7 +30,7 @@ class TX_ADD_UDP() extends Module{
 
 	val sIDLE :: sPAYLOAD :: Nil = Enum(2)
 	val state                   = RegInit(sIDLE)	
-	Collector.report(state===sIDLE, "TX_ADD_UDP===sIDLE")
+	// Collector.report(state===sIDLE, "TX_ADD_UDP===sIDLE")
 	
 
 	udp_meta_fifo.io.deq.ready      := (state === sIDLE) & io.tx_data_out.ready & io.ip_meta_out.ready & udp_data_fifo.io.deq.valid

@@ -26,7 +26,7 @@ class RX_UDP_PROCESS() extends Module{
 
 	val sIDLE :: sPAYLOAD :: Nil = Enum(2)
 	val state                       = RegInit(sIDLE)	
-	Collector.report(state===sIDLE, "RX_UDP_PROCESS===sIDLE")
+	// Collector.report(state===sIDLE, "RX_UDP_PROCESS===sIDLE")
 	
 	udp_data_fifo.io.deq.ready             := ((state === sIDLE) & udp_meta_fifo.io.deq.valid & io.udpip_meta_out.ready & io.rx_data_out.ready) | ((state === sPAYLOAD) & io.rx_data_out.ready) 
 

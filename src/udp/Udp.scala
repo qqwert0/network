@@ -10,7 +10,7 @@ import network.roce.util.UDP_HEADER
 import common.connection.Connection
 import common.AddHeader
 import common.SplitHeader
-import network.cmac.CMACPin
+import common._
 import network.cmac.XCMAC
 import network.ip.IPTest
 import network.roce.util.Util
@@ -37,7 +37,7 @@ class Udp extends RawModule{
 	})
 
 	val cmac = Module(new XCMAC())
-	cmac.getTCL("Path to your ip")
+	cmac.getTCL()
 
 	cmac.io.pin				<> io.cmacPin
 	cmac.io.drp_clk         := io.drpClk
