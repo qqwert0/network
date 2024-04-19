@@ -45,14 +45,14 @@ class CONN_TABLE() extends Module{
 
 
     //cycle1
-    when(io.conn_init.fire()){
+    when(io.conn_init.fire){
         conn_table.io.addr_a                    := io.conn_init.bits.qpn
         conn_table.io.wr_en_a                   := 1.U
         conn_table.io.data_in_a.remote_qpn      := io.conn_init.bits.remote_qpn
         conn_table.io.data_in_a.remote_ip       := io.conn_init.bits.remote_ip
         conn_table.io.data_in_a.remote_udp_port := io.conn_init.bits.remote_udp_port
         state                                   := sIDLE        
-    }.elsewhen(io.tx2conn_req.fire()){
+    }.elsewhen(io.tx2conn_req.fire){
         conn_table.io.addr_b             := io.tx2conn_req.bits
         state                            := sTXRSP
     }.otherwise{
@@ -77,10 +77,10 @@ class CONN_TABLE() extends Module{
     
 	// switch(state){
 	// 	is(sIDLE){
-    //         when(conn_tx_fifo.io.deq.fire()){
+    //         when(conn_tx_fifo.io.deq.fire){
     //             conn_table.io.addr_b             := conn_tx_fifo.io.deq.bits
     //             state                           := sTXRSP
-    //         }.elsewhen(conn_init_fifo.io.deq.fire()){
+    //         }.elsewhen(conn_init_fifo.io.deq.fire){
     //             conn_table.io.addr_a                    := conn_init_fifo.io.deq.bits.qpn
     //             conn_table.io.wr_en_a                   := 1.U
     //             conn_table.io.data_in_a.remote_qpn      := conn_init_fifo.io.deq.bits.remote_qpn

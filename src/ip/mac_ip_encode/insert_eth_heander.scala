@@ -35,7 +35,7 @@ class insert_eth_header extends Module{
 
 	switch(state){
 		is(sIDLE){
-			when(data_fifo.io.out.fire() & head_fifo.io.out.fire()){
+			when(data_fifo.io.out.fire & head_fifo.io.out.fire){
                 io.data_out.valid           := 1.U
                 io.data_out.bits            <> data_fifo.io.out.bits
                 io.data_out.bits.data       := Cat(data_fifo.io.out.bits.data(511,112),head_fifo.io.out.bits)
@@ -47,7 +47,7 @@ class insert_eth_header extends Module{
 			}
 		}
 		is(sPAYLOAD){
-            when(data_fifo.io.out.fire()){
+            when(data_fifo.io.out.fire){
                 io.data_out.bits        <> data_fifo.io.out.bits
                 io.data_out.valid       := 1.U
                 when(data_fifo.io.out.bits.last === 1.U){

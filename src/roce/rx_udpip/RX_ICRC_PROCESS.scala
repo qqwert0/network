@@ -39,7 +39,7 @@ class RX_ICRC_PROCESS() extends Module{
 	
 	switch(state){
 		is(sIDLE){
-			when(io.rx_data_in.fire()){
+			when(io.rx_data_in.fire){
 				pre_word			:= io.rx_data_in.bits
 				when(io.rx_data_in.bits.last === 1.U){
 					state			:= sLAST
@@ -51,7 +51,7 @@ class RX_ICRC_PROCESS() extends Module{
 			}
 		}
 		is(sPKG){
-			when(io.rx_data_in.fire()){
+			when(io.rx_data_in.fire){
 				pre_word			:= io.rx_data_in.bits
 				when(io.rx_data_in.bits.last === 1.U){
 					when(io.rx_data_in.bits.keep(4) === 0.U){
@@ -158,7 +158,7 @@ class RX_ICRC_PROCESS() extends Module{
 				ip_data_fifo.io.in.valid	:= 1.U							
 			}
 
-			when(io.rx_data_in.fire()){
+			when(io.rx_data_in.fire){
 				pre_word			:= io.rx_data_in.bits
 				when(io.rx_data_in.bits.last === 1.U){
 					state			:= sLAST

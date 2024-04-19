@@ -36,7 +36,7 @@ class RX_IP_PROCESS() extends Module{
 	
 	switch(state){
 		is(sIDLE){
-			when(io.rx_data_in.fire()){
+			when(io.rx_data_in.fire){
                 io.rx_data_out.valid        := 1.U
                 io.rx_data_out.bits         <> io.rx_data_in.bits
 				ip_header_tmp               := io.rx_data_in.bits.data(CONFIG.IP_HEADER_LEN-1,0).asTypeOf(ip_header_tmp)
@@ -55,7 +55,7 @@ class RX_IP_PROCESS() extends Module{
 			}
 		}
 		is(sPAYLOAD){
-            when(io.rx_data_in.fire()){
+            when(io.rx_data_in.fire){
                 io.rx_data_out.bits     <> io.rx_data_in.bits
                 io.rx_data_out.valid    := 1.U
                 when(io.rx_data_in.bits.last === 1.U){

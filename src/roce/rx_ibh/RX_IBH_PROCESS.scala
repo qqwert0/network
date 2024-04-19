@@ -47,7 +47,7 @@ class RX_IBH_PROCESS() extends Module{
 	
 	switch(state){
 		is(sIDLE){
-			when(ibh_data_fifo.io.deq.fire() & ibh_meta_fifo.io.deq.fire()){
+			when(ibh_data_fifo.io.deq.fire & ibh_meta_fifo.io.deq.fire){
                 io.rx_ibh_data_out.valid:= 1.U
                 io.rx_ibh_data_out.bits <> ibh_data_fifo.io.deq.bits
 				ibh_header_tmp          := ibh_data_fifo.io.deq.bits.data(CONFIG.IBH_HEADER_LEN-1,0).asTypeOf(ibh_header_tmp)
@@ -61,7 +61,7 @@ class RX_IBH_PROCESS() extends Module{
 			}
 		}
 		is(sPAYLOAD){
-            when(ibh_data_fifo.io.deq.fire()){
+            when(ibh_data_fifo.io.deq.fire){
                 io.rx_ibh_data_out.bits     <> ibh_data_fifo.io.deq.bits
                 io.rx_ibh_data_out.valid    := 1.U
                 when(ibh_data_fifo.io.deq.bits.last === 1.U){

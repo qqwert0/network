@@ -51,7 +51,7 @@ class TX_ADD_IBH() extends Module{
 	
 	switch(state){
 		is(sIDLE){
-			when(ibh_header_fifo.io.deq.fire() & exh_data_fifo.io.deq.fire()){
+			when(ibh_header_fifo.io.deq.fire & exh_data_fifo.io.deq.fire){
 				ibh_header_tmp          		:= ibh_header_fifo.io.deq.bits.data(CONFIG.IBH_HEADER_LEN-1,0).asTypeOf(ibh_header_tmp)
                 io.tx_data_out.valid            := 1.U
                 io.tx_data_out.bits.last        := 0.U
@@ -66,7 +66,7 @@ class TX_ADD_IBH() extends Module{
 			}
 		}
 		is(sPAYLOAD){
-			when(exh_data_fifo.io.deq.fire()){
+			when(exh_data_fifo.io.deq.fire){
                 io.tx_data_out.valid 		    := 1.U
 				io.tx_data_out.bits 		    <> exh_data_fifo.io.deq.bits 
 				when(exh_data_fifo.io.deq.bits.last === 1.U){

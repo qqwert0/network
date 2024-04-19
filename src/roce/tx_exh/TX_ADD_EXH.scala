@@ -62,7 +62,7 @@ class TX_ADD_EXH() extends Module{
 	
 	switch(state){
 		is(sIDLE){
-			when(pkg_info_fifo.io.deq.fire()){
+			when(pkg_info_fifo.io.deq.fire){
                 write_first := 1.U
 				pkg_info	:= pkg_info_fifo.io.deq.bits
 				when(pkg_info_fifo.io.deq.bits.hasHeader){
@@ -73,7 +73,7 @@ class TX_ADD_EXH() extends Module{
 			}
 		}
 		is(sHEADER){
-			when(header_fifo.io.deq.fire()){
+			when(header_fifo.io.deq.fire){
                 curr_word                       <> header_fifo.io.deq.bits
 				when(!pkg_info.hasPayload){
                     io.tx_data_out.valid 		:= 1.U
@@ -92,7 +92,7 @@ class TX_ADD_EXH() extends Module{
 			}
 		}
 		is(sAETH){
-			when(aeth_fifo.io.deq.fire()){
+			when(aeth_fifo.io.deq.fire){
                 io.tx_data_out.valid 		:= 1.U
 				io.tx_data_out.bits 		<> aeth_fifo.io.deq.bits                
 				when(write_first === 1.U){
@@ -105,7 +105,7 @@ class TX_ADD_EXH() extends Module{
 			}
 		}
 		is(sRETH){
-			when(reth_fifo.io.deq.fire()){
+			when(reth_fifo.io.deq.fire){
                 io.tx_data_out.valid 		:= 1.U
 				io.tx_data_out.bits			<> reth_fifo.io.deq.bits               
 				when(write_first === 1.U){                  
@@ -118,7 +118,7 @@ class TX_ADD_EXH() extends Module{
 			}			
 		}
 		is(sRAW){
-			when(raw_fifo.io.deq.fire()){
+			when(raw_fifo.io.deq.fire){
                 io.tx_data_out.valid 		:= 1.U
 				io.tx_data_out.bits 		<> raw_fifo.io.deq.bits                                
                 when(raw_fifo.io.deq.bits.last === 1.U){

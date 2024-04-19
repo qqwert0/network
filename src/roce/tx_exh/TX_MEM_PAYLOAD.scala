@@ -58,7 +58,7 @@ class TX_MEM_PAYLOAD() extends Module{
 
 	switch(state){
 		is(sIDLE){
-			when(pkg_info_fifo.io.deq.fire()){
+			when(pkg_info_fifo.io.deq.fire){
 				pkg_info	<> pkg_info_fifo.io.deq.bits
 				length_cnt	:= 0.U
 				when(pkg_info_fifo.io.deq.bits.pkg_type === PKG_TYPE.AETH){
@@ -75,7 +75,7 @@ class TX_MEM_PAYLOAD() extends Module{
 		is(sAETH){
 			when(pkg_info.data_from_mem){
 				io.s_mem_read_data.ready := io.aeth_data_out.ready
-				when(io.s_mem_read_data.fire()){
+				when(io.s_mem_read_data.fire){
 					io.aeth_data_out.valid 			:= 1.U 
 					io.aeth_data_out.bits.data 		:= io.s_mem_read_data.bits.data
 					io.aeth_data_out.bits.keep 		:= io.s_mem_read_data.bits.keep
@@ -91,7 +91,7 @@ class TX_MEM_PAYLOAD() extends Module{
 				}				
 			}.otherwise{
 				io.s_send_data.ready := io.aeth_data_out.ready
-				when(io.s_send_data.fire()){
+				when(io.s_send_data.fire){
 					io.aeth_data_out.valid 			:= 1.U 
 					io.aeth_data_out.bits.data 		:= io.s_send_data.bits.data
 					io.aeth_data_out.bits.keep 		:= io.s_send_data.bits.keep
@@ -111,7 +111,7 @@ class TX_MEM_PAYLOAD() extends Module{
 		is(sRETH){
 			when(pkg_info.data_from_mem){
 				io.s_mem_read_data.ready := io.reth_data_out.ready
-				when(io.s_mem_read_data.fire()){
+				when(io.s_mem_read_data.fire){
 					io.reth_data_out.valid 			:= 1.U 
 					io.reth_data_out.bits.data 		:= io.s_mem_read_data.bits.data
 					io.reth_data_out.bits.keep 		:= io.s_mem_read_data.bits.keep
@@ -127,7 +127,7 @@ class TX_MEM_PAYLOAD() extends Module{
 				}	
 			}.otherwise{
 				io.s_send_data.ready := io.reth_data_out.ready
-				when(io.s_send_data.fire()){
+				when(io.s_send_data.fire){
 					io.reth_data_out.valid 			:= 1.U 
 					io.reth_data_out.bits.data 		:= io.s_send_data.bits.data
 					io.reth_data_out.bits.keep 		:= io.s_send_data.bits.keep
@@ -146,7 +146,7 @@ class TX_MEM_PAYLOAD() extends Module{
 		is(sRAW){
 			when(pkg_info.data_from_mem){
 				io.s_mem_read_data.ready := io.raw_data_out.ready
-				when(io.s_mem_read_data.fire()){
+				when(io.s_mem_read_data.fire){
 					io.raw_data_out.valid 			:= 1.U 
 					io.raw_data_out.bits.data 		:= io.s_mem_read_data.bits.data
 					io.raw_data_out.bits.keep 		:= io.s_mem_read_data.bits.keep
@@ -162,7 +162,7 @@ class TX_MEM_PAYLOAD() extends Module{
 				}		
 			}.otherwise{
 				io.s_send_data.ready := io.raw_data_out.ready
-				when(io.s_send_data.fire()){
+				when(io.s_send_data.fire){
 					io.raw_data_out.valid 			:= 1.U 
 					io.raw_data_out.bits.data 		:= io.s_send_data.bits.data
 					io.raw_data_out.bits.keep 		:= io.s_send_data.bits.keep

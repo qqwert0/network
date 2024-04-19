@@ -23,10 +23,10 @@ class RX_IBH_FSM() extends Module{
 	})
 
 
-    // Collector.count(io.ibh_meta_in.fire() & io.ibh_meta_in.bits.qpn === 1.U & io.ibh_meta_in.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN1 PKG")
-    // Collector.count(io.ibh_meta_in.fire() & io.ibh_meta_in.bits.qpn === 1.U & io.ibh_meta_in.bits.op_code === IB_OP_CODE.RC_ACK, "QPN1 ACK")
-    // Collector.count(io.ibh_meta_in.fire() & io.ibh_meta_in.bits.qpn === 2.U & io.ibh_meta_in.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN2 PKG")
-    // Collector.count(io.ibh_meta_in.fire() & io.ibh_meta_in.bits.qpn === 2.U & io.ibh_meta_in.bits.op_code === IB_OP_CODE.RC_ACK, "QPN2 ACK")
+    // Collector.count(io.ibh_meta_in.fire & io.ibh_meta_in.bits.qpn === 1.U & io.ibh_meta_in.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN1 PKG")
+    // Collector.count(io.ibh_meta_in.fire & io.ibh_meta_in.bits.qpn === 1.U & io.ibh_meta_in.bits.op_code === IB_OP_CODE.RC_ACK, "QPN1 ACK")
+    // Collector.count(io.ibh_meta_in.fire & io.ibh_meta_in.bits.qpn === 2.U & io.ibh_meta_in.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN2 PKG")
+    // Collector.count(io.ibh_meta_in.fire & io.ibh_meta_in.bits.qpn === 2.U & io.ibh_meta_in.bits.op_code === IB_OP_CODE.RC_ACK, "QPN2 ACK")
 
 	val ibh_meta_fifo = Module(new Queue(new IBH_META(),16))
 	io.ibh_meta_in 		    <> ibh_meta_fifo.io.enq
@@ -51,7 +51,7 @@ class RX_IBH_FSM() extends Module{
 
     //cycle1
 
-	when(ibh_meta_fifo.io.deq.fire()){
+	when(ibh_meta_fifo.io.deq.fire){
         io.rx2psn_req.valid             := 1.U
         io.rx2psn_req.bits.meta         := ibh_meta_fifo.io.deq.bits
         when(ibh_meta_fifo.io.deq.bits.op_code === IB_OP_CODE.RC_ACK){
@@ -63,7 +63,7 @@ class RX_IBH_FSM() extends Module{
 
     //cycle2
 
-    when(psn_rx_fifo.io.deq.fire()){
+    when(psn_rx_fifo.io.deq.fire){
         io.ibh_meta_out.valid               := 1.U
         io.ibh_meta_out.bits                := psn_rx_fifo.io.deq.bits.meta
         when(psn_rx_fifo.io.deq.bits.meta.op_code === IB_OP_CODE.RC_ACK){   

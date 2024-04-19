@@ -61,19 +61,19 @@ class MSN_TABLE() extends Module{
 
     //cycle 1
 
-    when(msn_rx_fifo.io.deq.fire()){
+    when(msn_rx_fifo.io.deq.fire){
         msn_request                     := msn_rx_fifo.io.deq.bits
         msn_table.io.addr_b             := msn_rx_fifo.io.deq.bits.qpn
         state                           := sRXRSP
-    }.elsewhen(io.rx2msn_wr.fire()){
+    }.elsewhen(io.rx2msn_wr.fire){
         msn_request                     := io.rx2msn_wr.bits
         msn_table.io.addr_b             := io.rx2msn_wr.bits.qpn
         state                           := sRXWR       
-    }.elsewhen(msn_tx_fifo.io.deq.fire()){
+    }.elsewhen(msn_tx_fifo.io.deq.fire){
         msn_request                     := msn_tx_fifo.io.deq.bits
         msn_table.io.addr_b             := msn_tx_fifo.io.deq.bits.qpn
         state                           := sTXRSP
-    }.elsewhen(msn_init_fifo.io.deq.fire()){
+    }.elsewhen(msn_init_fifo.io.deq.fire){
         msn_init_tmp                    := msn_init_fifo.io.deq.bits
         state                           := sINIT
     }.otherwise{

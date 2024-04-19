@@ -62,7 +62,7 @@ class RX_EXH_PAYLOAD() extends Module{
 	
 	switch(state){
 		is(sIDLE){
-			when(pkg_info_fifo.io.deq.fire()){
+			when(pkg_info_fifo.io.deq.fire){
 				pkg_info	<> pkg_info_fifo.io.deq.bits
 				length_cnt	:= 0.U
 				when(pkg_info_fifo.io.deq.bits.pkg_type === PKG_TYPE.AETH){
@@ -76,7 +76,7 @@ class RX_EXH_PAYLOAD() extends Module{
 		}
 		is(sAETH){
 			exh_data_fifo.io.deq.ready := io.aeth_data_out.ready
-			when(exh_data_fifo.io.deq.fire()){
+			when(exh_data_fifo.io.deq.fire){
 				io.aeth_data_out.valid 			:= 1.U 
 				io.aeth_data_out.bits 		    <> exh_data_fifo.io.deq.bits
 				when(exh_data_fifo.io.deq.bits.last === 1.U){
@@ -88,7 +88,7 @@ class RX_EXH_PAYLOAD() extends Module{
 		}
 		is(sRETH){
 			exh_data_fifo.io.deq.ready := io.reth_data_out.ready
-			when(exh_data_fifo.io.deq.fire()){
+			when(exh_data_fifo.io.deq.fire){
 				io.reth_data_out.valid 			:= 1.U 
 				io.reth_data_out.bits 		    <> exh_data_fifo.io.deq.bits
 				when(exh_data_fifo.io.deq.bits.last === 1.U){
@@ -100,7 +100,7 @@ class RX_EXH_PAYLOAD() extends Module{
 		}
 		is(sRAW){
 			exh_data_fifo.io.deq.ready := io.raw_data_out.ready
-			when(exh_data_fifo.io.deq.fire()){
+			when(exh_data_fifo.io.deq.fire){
 				io.raw_data_out.valid 			:= 1.U 
 				io.raw_data_out.bits 		    <> exh_data_fifo.io.deq.bits
 				when(exh_data_fifo.io.deq.bits.last === 1.U){

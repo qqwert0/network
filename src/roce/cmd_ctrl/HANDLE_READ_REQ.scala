@@ -35,7 +35,7 @@ class HANDLE_READ_REQ() extends Module{
 	
 	switch(state){
 		is(sIDLE){
-			when(r_read_req_fifo.io.deq.fire()){
+			when(r_read_req_fifo.io.deq.fire){
 				rdma_meta	                    <> r_read_req_fifo.io.deq.bits
                 when(r_read_req_fifo.io.deq.bits.length > CONFIG.MTU.U){
                     state	                    := sGENERATE

@@ -168,17 +168,17 @@ class TB_ROCE() extends Module{
 
     // word        := (length/64.U)-1.U;
     // when(rdma_cmd.asBool){
-    //     when(io.s_mem_read_data.fire() & (data_cnt === word)){
+    //     when(io.s_mem_read_data.fire & (data_cnt === word)){
     //         data_cnt        := 0.U
     //         complete_req    := complete_req + 1.U
-    //     }.elsewhen(io.s_mem_read_data.fire()){
+    //     }.elsewhen(io.s_mem_read_data.fire){
     //         data_cnt        := data_cnt + 1.U
     //     }
     // }.otherwise{
-    //     when(io.m_mem_write_data.fire() & (data_cnt === word)){
+    //     when(io.m_mem_write_data.fire & (data_cnt === word)){
     //         data_cnt        := 0.U
     //         complete_req    := complete_req + 1.U
-    //     }.elsewhen(io.m_mem_write_data.fire()){
+    //     }.elsewhen(io.m_mem_write_data.fire){
     //         data_cnt        := data_cnt + 1.U
     //     }        
     // }

@@ -41,7 +41,7 @@ class RX_DROP_PKG() extends Module{
 
 	switch(state){
 		is(sIDLE){
-			when(drop_info_fifo.io.deq.fire() & rx_data_fifo.io.deq.fire() & rx_meta_fifo.io.deq.fire()){
+			when(drop_info_fifo.io.deq.fire & rx_data_fifo.io.deq.fire & rx_meta_fifo.io.deq.fire){
 				when(drop_info_fifo.io.deq.bits){
                     when(rx_data_fifo.io.deq.bits.last === 1.U){
                         state	:= sIDLE
@@ -66,7 +66,7 @@ class RX_DROP_PKG() extends Module{
 			}
 		}
 		is(sDROP){
-			when(rx_data_fifo.io.deq.fire()){
+			when(rx_data_fifo.io.deq.fire){
                 when(rx_data_fifo.io.deq.bits.last === 1.U){
                     state	:= sIDLE
                 }.otherwise{
@@ -75,7 +75,7 @@ class RX_DROP_PKG() extends Module{
 			}
 		}
 		is(sFWD){
-			when(rx_data_fifo.io.deq.fire()){
+			when(rx_data_fifo.io.deq.fire){
                 io.rx_data_out.valid    := 1.U
                 io.rx_data_out.bits     <> rx_data_fifo.io.deq.bits
                 when(rx_data_fifo.io.deq.bits.last === 1.U){

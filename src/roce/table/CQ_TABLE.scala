@@ -49,15 +49,15 @@ class CQ_TABLE() extends Module{
     
 	switch(state){
 		is(sIDLE){
-            when(dir_wq_fifo.io.out.fire()){
+            when(dir_wq_fifo.io.out.fire){
                 cq_request                      := dir_wq_fifo.io.out.bits
                 cq_table.io.addr_b              := dir_wq_fifo.io.out.bits.qpn
                 state                           := sRXRSP
-            }.elsewhen(rq_fifo.io.out.fire()){
+            }.elsewhen(rq_fifo.io.out.fire){
                 cq_request                      := rq_fifo.io.out.bits
                 cq_table.io.addr_b              := rq_fifo.io.out.bits.qpn
                 state                           := sTXRSP
-            }.elsewhen(init_fifo.io.out.fire()){
+            }.elsewhen(init_fifo.io.out.fire){
                 cq_table.io.addr_a             := init_fifo.io.out.bits.qpn
                 cq_table.io.wr_en_a            := 1.U
                 cq_table.io.data_in_a.wq_num   := init_fifo.io.out.bits.wq_num

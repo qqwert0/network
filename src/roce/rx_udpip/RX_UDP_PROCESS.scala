@@ -42,7 +42,7 @@ class RX_UDP_PROCESS() extends Module{
 	
 	switch(state){
 		is(sIDLE){
-			when(udp_data_fifo.io.deq.fire() & udp_meta_fifo.io.deq.fire()){
+			when(udp_data_fifo.io.deq.fire & udp_meta_fifo.io.deq.fire){
                 io.rx_data_out.valid                := 1.U
                 io.rx_data_out.bits                 <> udp_data_fifo.io.deq.bits
 				udp_header_tmp                      := udp_data_fifo.io.deq.bits.data(CONFIG.UDP_HEADER_LEN-1,0).asTypeOf(udp_header_tmp)
@@ -58,7 +58,7 @@ class RX_UDP_PROCESS() extends Module{
 			}
 		}
 		is(sPAYLOAD){
-            when(udp_data_fifo.io.deq.fire()){
+            when(udp_data_fifo.io.deq.fire){
                 io.rx_data_out.bits     <> udp_data_fifo.io.deq.bits
                 io.rx_data_out.valid    := 1.U
                 when(udp_data_fifo.io.deq.bits.last === 1.U){

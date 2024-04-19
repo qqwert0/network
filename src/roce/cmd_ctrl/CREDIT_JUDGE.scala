@@ -21,10 +21,10 @@ class CREDIT_JUDGE() extends Module{
         val tx_exh_event	    = (Decoupled(new IBH_META()))
 	})
 
-    // Collector.count(io.exh_event.fire() & io.exh_event.bits.qpn === 1.U & io.exh_event.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN1 PKG")
-    // Collector.count(io.ack_event.fire() & io.ack_event.bits.qpn === 1.U & io.ack_event.bits.op_code === IB_OP_CODE.RC_ACK, "QPN1 ACK")
-    // Collector.count(io.exh_event.fire() & io.exh_event.bits.qpn === 2.U & io.exh_event.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN2 PKG")
-    // Collector.count(io.ack_event.fire() & io.ack_event.bits.qpn === 2.U & io.ack_event.bits.op_code === IB_OP_CODE.RC_ACK, "QPN2 ACK")
+    // Collector.count(io.exh_event.fire & io.exh_event.bits.qpn === 1.U & io.exh_event.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN1 PKG")
+    // Collector.count(io.ack_event.fire & io.ack_event.bits.qpn === 1.U & io.ack_event.bits.op_code === IB_OP_CODE.RC_ACK, "QPN1 ACK")
+    // Collector.count(io.exh_event.fire & io.exh_event.bits.qpn === 2.U & io.exh_event.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN2 PKG")
+    // Collector.count(io.ack_event.fire & io.ack_event.bits.qpn === 2.U & io.ack_event.bits.op_code === IB_OP_CODE.RC_ACK, "QPN2 ACK")
 
 
     val exh_event_fifo = XQueue(new IBH_META(), entries=4)
@@ -62,11 +62,11 @@ class CREDIT_JUDGE() extends Module{
 	
     //cycle 1
 
-    when(ack_event_fifo.io.out.fire()){
+    when(ack_event_fifo.io.out.fire){
         tx2fc_ack_fifo.io.in.valid 	        := 1.U 
         tx2fc_ack_fifo.io.in.bits       := ack_event_fifo.io.out.bits
         // state                       := sGENERATE
-    }.elsewhen(exh_event_fifo.io.out.fire()){
+    }.elsewhen(exh_event_fifo.io.out.fire){
         event_meta                  := exh_event_fifo.io.out.bits
         when((exh_event_fifo.io.out.bits.op_code === IB_OP_CODE.RC_WRITE_FIRST) || (exh_event_fifo.io.out.bits.op_code === IB_OP_CODE.RC_DIRECT_FIRST)){
             tx2fc_req_fifo.io.in.valid 	        := 1.U  
@@ -85,10 +85,10 @@ class CREDIT_JUDGE() extends Module{
     //cycle 2
 
 
-    when(io.fc2ack_rsp.fire()){
+    when(io.fc2ack_rsp.fire){
         io.tx_exh_event.valid   := 1.U
         io.tx_exh_event.bits    := io.fc2ack_rsp.bits
-    }.elsewhen(io.fc2tx_rsp.fire()){
+    }.elsewhen(io.fc2tx_rsp.fire){
         when(io.fc2tx_rsp.bits.valid_event){
             io.tx_exh_event.valid   := 1.U
             io.tx_exh_event.bits    := io.fc2tx_rsp.bits

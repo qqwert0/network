@@ -32,7 +32,7 @@ class RX_EXH_ACK() extends Module{
 
     //cycle 0
 
-	when(meta_fifo.io.out.fire()){
+	when(meta_fifo.io.out.fire){
         when(meta_fifo.io.out.bits.op_code === IB_OP_CODE.RC_ACK){
             io.rx2fc_req.valid              := 1.U
             io.rx2fc_req.bits               := meta_fifo.io.out.bits

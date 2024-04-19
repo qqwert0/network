@@ -69,7 +69,7 @@ class RX_MEM_PAYLOAD() extends Module{
 
 	switch(state){
 		is(sIDLE){
-			when(io.pkg_info.fire()){
+			when(io.pkg_info.fire){
 				pkg_info	<> io.pkg_info.bits
 				length_cnt	:= 0.U
 				when(io.pkg_info.bits.pkg_type === PKG_TYPE.AETH){
@@ -85,7 +85,7 @@ class RX_MEM_PAYLOAD() extends Module{
 		}
 		is(sAETH){
 			when(pkg_info.data_to_mem){
-				when(io.aeth_data_in.fire()){
+				when(io.aeth_data_in.fire){
 					io.m_mem_write_data.valid 		:= 1.U 
 					io.m_mem_write_data.bits 		<> io.aeth_data_in.bits
 					length_cnt						:= length_cnt + 64.U
@@ -99,7 +99,7 @@ class RX_MEM_PAYLOAD() extends Module{
 					}
 				}				
 			}.otherwise{
-				when(io.aeth_data_in.fire()){
+				when(io.aeth_data_in.fire){
 					io.m_recv_data.valid 		:= 1.U 
 					io.m_recv_data.bits 		<> io.aeth_data_in.bits
 					length_cnt						:= length_cnt + 64.U
@@ -117,7 +117,7 @@ class RX_MEM_PAYLOAD() extends Module{
 		}
 		is(sRETH){
 			when(pkg_info.data_to_mem){
-				when(io.reth_data_in.fire()){
+				when(io.reth_data_in.fire){
 					io.m_mem_write_data.valid 		:= 1.U 
 					io.m_mem_write_data.bits 		<> io.reth_data_in.bits
 					length_cnt						:= length_cnt + 64.U
@@ -131,7 +131,7 @@ class RX_MEM_PAYLOAD() extends Module{
 					}
 				}	
 			}.otherwise{
-				when(io.reth_data_in.fire()){
+				when(io.reth_data_in.fire){
 					io.m_recv_data.valid 		:= 1.U 
 					io.m_recv_data.bits 		<> io.reth_data_in.bits
 					length_cnt						:= length_cnt + 64.U
@@ -148,7 +148,7 @@ class RX_MEM_PAYLOAD() extends Module{
 		}
 		is(sRAW){
 			when(pkg_info.data_to_mem){
-				when(io.raw_data_in.fire()){
+				when(io.raw_data_in.fire){
 					io.m_mem_write_data.valid 		:= 1.U 
 					io.m_mem_write_data.bits 		<> io.raw_data_in.bits
 					length_cnt						:= length_cnt + 64.U
@@ -162,7 +162,7 @@ class RX_MEM_PAYLOAD() extends Module{
 					}
 				}	
 			}.otherwise{
-				when(io.raw_data_in.fire()){
+				when(io.raw_data_in.fire){
 					io.m_recv_data.valid 		:= 1.U 
 					io.m_recv_data.bits 		<> io.raw_data_in.bits
 					length_cnt						:= length_cnt + 64.U

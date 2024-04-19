@@ -96,7 +96,7 @@ class NetworkStackTop extends RawModule{
 		val valid 							= RegInit(UInt(1.W),0.U)
 		when(risingStartInit === 1.U){
 			valid							:= 1.U
-		}.elsewhen(network.io.qp_init.fire()){
+		}.elsewhen(network.io.qp_init.fire){
 			valid							:= 0.U
 		}
 
@@ -127,19 +127,19 @@ class NetworkStackTop extends RawModule{
         val data_cnt                        = RegInit(UInt(8.W),0.U)
 		when(risingStartSend === 1.U){
 			s_valid							:= 1.U
-		}.elsewhen(network.io.s_tx_meta.fire()){
+		}.elsewhen(network.io.s_tx_meta.fire){
 			s_valid							:= 0.U
 		}
 
 		when(risingStartSend === 1.U){
 			data_start							:= 1.U
-		}.elsewhen((data_cnt === (length-1.U)) & network.io.s_send_data.fire()){
+		}.elsewhen((data_cnt === (length-1.U)) & network.io.s_send_data.fire){
 			data_start							:= 0.U
 		}
 
-		when((data_cnt === (length-1.U)) & network.io.s_send_data.fire()){
+		when((data_cnt === (length-1.U)) & network.io.s_send_data.fire){
 			data_cnt							:= 0.U
-		}.elsewhen(network.io.s_send_data.fire()){
+		}.elsewhen(network.io.s_send_data.fire){
 			data_cnt							:= data_cnt + 1.U
 		}
 
@@ -154,7 +154,7 @@ class NetworkStackTop extends RawModule{
         network.io.s_send_data.valid               := data_start
         network.io.s_send_data.bits.data           := data_cnt
         network.io.s_send_data.bits.keep           := "hffffffffffffffff".U
-        network.io.s_send_data.bits.last           := data_cnt === (length-1.U) & network.io.s_send_data.fire()
+        network.io.s_send_data.bits.last           := data_cnt === (length-1.U) & network.io.s_send_data.fire
 
 
 	}

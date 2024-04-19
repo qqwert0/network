@@ -58,14 +58,14 @@ class PSN_TABLE() extends Module{
     
 
     //cycle1
-    when(psn_init_fifo.io.deq.fire()){
+    when(psn_init_fifo.io.deq.fire){
         psn_init_tmp                    := psn_init_fifo.io.deq.bits
         state                           := sINIT
-    }.elsewhen(psn_rx_fifo.io.deq.fire()){
+    }.elsewhen(psn_rx_fifo.io.deq.fire){
         psn_table.io.addr_b             := psn_rx_fifo.io.deq.bits.meta.qpn
         psn_rx_req                      := psn_rx_fifo.io.deq.bits
         state                           := sRXRSP
-    }.elsewhen(psn_tx_fifo.io.deq.fire()){
+    }.elsewhen(psn_tx_fifo.io.deq.fire){
         psn_table.io.addr_b             := psn_tx_fifo.io.deq.bits.meta.qpn
         psn_tx_req                      := psn_tx_fifo.io.deq.bits
         state                           := sTXRSP                    

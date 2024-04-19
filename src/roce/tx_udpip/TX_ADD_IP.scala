@@ -45,7 +45,7 @@ class TX_ADD_IP() extends Module{
 	
 	switch(state){
 		is(sIDLE){
-			when(ip_meta_fifo.io.deq.fire() & ip_data_fifo.io.deq.fire()){
+			when(ip_meta_fifo.io.deq.fire & ip_data_fifo.io.deq.fire){
                 ip_head.version_IHL            	:= "h45".U
 				ip_head.length            		:= Util.reverse(ip_meta_fifo.io.deq.bits.length + 20.U)
 				ip_head.ttl            			:= "h40".U
@@ -65,7 +65,7 @@ class TX_ADD_IP() extends Module{
 			}
 		}
 		is(sPAYLOAD){
-			when(ip_data_fifo.io.deq.fire()){
+			when(ip_data_fifo.io.deq.fire){
                 io.tx_data_out.valid            := 1.U
                 io.tx_data_out.bits             <> ip_data_fifo.io.deq.bits
 				when(ip_data_fifo.io.deq.bits.last === 1.U){

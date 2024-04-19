@@ -38,7 +38,7 @@ class TX_ADD_ICRC() extends Module{
 	
 	switch(state){
 		is(sIDLE){
-			when(ip_data_fifo.io.out.fire()){
+			when(ip_data_fifo.io.out.fire){
 				when(ip_data_fifo.io.out.bits.last === 1.U){
 					when(ip_data_fifo.io.out.bits.keep(63) === 1.U){
 						state						:= sPOST

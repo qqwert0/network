@@ -39,7 +39,7 @@ class LOCAL_CMD_HANDLER() extends Module{
 	
 	switch(state){
 		is(sIDLE){
-			when(io.s_tx_meta.fire()){
+			when(io.s_tx_meta.fire){
 				rdma_meta	                        <> io.s_tx_meta.bits
 				when(io.s_tx_meta.bits.rdma_cmd === APP_OP_CODE.APP_READ){
                     state	                        := sIDLE

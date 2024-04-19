@@ -86,15 +86,15 @@ class FC_TABLE() extends Module{
 
 
     //cycle 1
-    when(io.fc_init.fire()){
+    when(io.fc_init.fire){
         fc_request(0).qpn                   := io.fc_init.bits.qpn
         fc_request(0).credit                := io.fc_init.bits.credit
         state0                              := sINIT
-    }.elsewhen(io.rx2fc_req.fire()){
+    }.elsewhen(io.rx2fc_req.fire){
         fc_request(0)                       := io.rx2fc_req.bits
         fc_table.io.addr_b                  := io.rx2fc_req.bits.qpn
         state0                              := sRXRSP                      
-    }.elsewhen(io.tx2fc_ack.fire()){
+    }.elsewhen(io.tx2fc_ack.fire){
         fc_request(0)                       := io.tx2fc_ack.bits
         fc_table.io.addr_b                  := io.tx2fc_ack.bits.qpn
         state0                              := sTXACK
@@ -107,7 +107,7 @@ class FC_TABLE() extends Module{
             state0                              := sIDLE
         }
         tx_wait                                := tx_wait + 1.U
-    }.elsewhen(io.tx2fc_req.fire()){
+    }.elsewhen(io.tx2fc_req.fire){
         fc_request(0)                       <> io.tx2fc_req.bits
         fc_table.io.addr_b                  := io.tx2fc_req.bits.qpn
         when(PKG_JUDGE.HAVE_DATA(io.tx2fc_req.bits.op_code)){

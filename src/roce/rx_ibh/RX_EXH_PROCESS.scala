@@ -45,7 +45,7 @@ class RX_EXH_PROCESS() extends Module{
 	
 	switch(state){
 		is(sIDLE){
-			when(exh_data_fifo.io.deq.fire() & ibh_meta_fifo.io.deq.fire()){
+			when(exh_data_fifo.io.deq.fire & ibh_meta_fifo.io.deq.fire){
 				io.rx_exh_data_out.valid:= 1.U
                 io.rx_exh_data_out.bits <> exh_data_fifo.io.deq.bits
 				when(PKG_JUDGE.RETH_PKG(ibh_meta_fifo.io.deq.bits.op_code)){
@@ -70,7 +70,7 @@ class RX_EXH_PROCESS() extends Module{
 			}
 		}
 		is(sPAYLOAD){
-            when(exh_data_fifo.io.deq.fire()){
+            when(exh_data_fifo.io.deq.fire){
                 io.rx_exh_data_out.bits     <> exh_data_fifo.io.deq.bits
                 io.rx_exh_data_out.valid    := 1.U
                 when(exh_data_fifo.io.deq.bits.last === 1.U){

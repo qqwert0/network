@@ -47,7 +47,7 @@ class TX_ADD_UDP() extends Module{
 	
 	switch(state){
 		is(sIDLE){
-			when(udp_meta_fifo.io.deq.fire() & udp_data_fifo.io.deq.fire()){
+			when(udp_meta_fifo.io.deq.fire & udp_data_fifo.io.deq.fire){
                 udp_head.src_prot               := Util.reverse(CONFIG.RDMA_DEFAULT_PORT.U)
                 udp_head.des_prot               := Util.reverse(udp_meta_fifo.io.deq.bits.dest_port)
                 udp_head.length                 := Util.reverse(udp_meta_fifo.io.deq.bits.udp_length)
@@ -73,7 +73,7 @@ class TX_ADD_UDP() extends Module{
 			}
 		}
 		is(sPAYLOAD){
-			when(udp_data_fifo.io.deq.fire()){
+			when(udp_data_fifo.io.deq.fire){
                 io.tx_data_out.valid            := 1.U
                 io.tx_data_out.bits             <> udp_data_fifo.io.deq.bits
 				when(udp_data_fifo.io.deq.bits.last === 1.U){

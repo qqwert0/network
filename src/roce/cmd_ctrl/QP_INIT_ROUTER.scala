@@ -35,7 +35,7 @@ class QP_INIT_ROUTER() extends Module{
 
     qp_init_fifo.io.out.ready        := io.msn_init.ready & io.psn_init.ready & io.conn_init.ready & io.fc_init.ready & io.cq_init.ready 
 
-    when(qp_init_fifo.io.out.fire()){
+    when(qp_init_fifo.io.out.fire){
         io.psn_init.valid           := 1.U
         io.psn_init.bits.qpn        := qp_init_fifo.io.out.bits.qpn
         io.psn_init.bits.local_psn  := qp_init_fifo.io.out.bits.local_psn

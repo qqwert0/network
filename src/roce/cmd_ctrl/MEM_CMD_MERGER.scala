@@ -23,11 +23,11 @@ class MEM_CMD_MERGER() extends Module{
     arbiter.io.in(1)    <>  io.local_read_req
     arbiter.io.out      <>  io.m_mem_read_cmd
 
-    when(io.remote_read_req.fire()){
+    when(io.remote_read_req.fire){
         fifo_pkg_info.io.in.bits.pkg_type := PKG_TYPE.AETH
         fifo_pkg_info.io.in.valid := 1.U
         fifo_pkg_info.io.in.bits.pkg_length := io.remote_read_req.bits.length
-    }.elsewhen(io.local_read_req.fire()){
+    }.elsewhen(io.local_read_req.fire){
         fifo_pkg_info.io.in.bits.pkg_type := PKG_TYPE.RETH
         fifo_pkg_info.io.in.valid := 1.U
         fifo_pkg_info.io.in.bits.pkg_length := io.local_read_req.bits.length

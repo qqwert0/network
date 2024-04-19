@@ -33,10 +33,10 @@ class RX_EXH_FSM() extends Module{
 	})
 
 
-    // Collector.count(io.ibh_meta_in.fire() & io.ibh_meta_in.bits.qpn === 1.U & io.ibh_meta_in.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN1 PKG")
-    // Collector.count(io.ibh_meta_in.fire() & io.ibh_meta_in.bits.qpn === 1.U & io.ibh_meta_in.bits.op_code === IB_OP_CODE.RC_ACK, "QPN1 ACK")
-    // Collector.count(io.ibh_meta_in.fire() & io.ibh_meta_in.bits.qpn === 2.U & io.ibh_meta_in.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN2 PKG")
-    // Collector.count(io.ibh_meta_in.fire() & io.ibh_meta_in.bits.qpn === 2.U & io.ibh_meta_in.bits.op_code === IB_OP_CODE.RC_ACK, "QPN2 ACK")
+    // Collector.count(io.ibh_meta_in.fire & io.ibh_meta_in.bits.qpn === 1.U & io.ibh_meta_in.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN1 PKG")
+    // Collector.count(io.ibh_meta_in.fire & io.ibh_meta_in.bits.qpn === 1.U & io.ibh_meta_in.bits.op_code === IB_OP_CODE.RC_ACK, "QPN1 ACK")
+    // Collector.count(io.ibh_meta_in.fire & io.ibh_meta_in.bits.qpn === 2.U & io.ibh_meta_in.bits.op_code === IB_OP_CODE.RC_DIRECT_ONLY, "QPN2 PKG")
+    // Collector.count(io.ibh_meta_in.fire & io.ibh_meta_in.bits.qpn === 2.U & io.ibh_meta_in.bits.op_code === IB_OP_CODE.RC_ACK, "QPN2 ACK")
 
     val ibh_meta_fifo = Module(new Queue(new IBH_META(), 1024))
     val msn_rx_fifo = Module(new Queue(new MSN_RSP(), 16))
@@ -119,7 +119,7 @@ class RX_EXH_FSM() extends Module{
 
     //cycle 0
 
-	when(ibh_meta_fifo.io.deq.fire()){
+	when(ibh_meta_fifo.io.deq.fire){
         io.rx2msn_req.valid             := 1.U
         io.rx2msn_req.bits.qpn          := ibh_meta_fifo.io.deq.bits.qpn   
         io.rx2msn_req.bits.meta         := ibh_meta_fifo.io.deq.bits          
@@ -133,7 +133,7 @@ class RX_EXH_FSM() extends Module{
 
     //cycle 1
 
-    when(msn_rx_fifo.io.deq.fire()){
+    when(msn_rx_fifo.io.deq.fire){
         msn_meta                        <> msn_rx_fifo.io.deq.bits
         when((msn_rx_fifo.io.deq.bits.meta.op_code === IB_OP_CODE.RC_READ_RESP_FIRST | msn_rx_fifo.io.deq.bits.meta.op_code === IB_OP_CODE.RC_READ_RESP_ONLY)){
             consume_read_addr           := true.B
@@ -155,7 +155,7 @@ class RX_EXH_FSM() extends Module{
     msn_meta1                       := msn_meta
     num_pkg_total                   := (msn_meta.meta.length + CONFIG.MTU.U-1.U) / CONFIG.MTU.U 
     when(state === sMETA){
-        when(l_read_pop_fifo.io.deq.fire()){
+        when(l_read_pop_fifo.io.deq.fire){
             consume_read_addr           := false.B
             l_read_addr                 <> l_read_pop_fifo.io.deq.bits.data
             state1                      := sDATA             
